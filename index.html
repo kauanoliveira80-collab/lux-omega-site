@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0a0a0f">
-  <title>LUX-Omega</title>
+  <title>LUX-Omega AI</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -13,28 +13,193 @@
       font-family: system-ui, -apple-system, sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 24px;
-      text-align: center;
+      height: 100vh;
     }
-    .card {
+    header {
       background: #14141f;
-      border: 1px solid #26263a;
-      border-radius: 16px;
-      padding: 32px;
-      max-width: 480px;
+      border-bottom: 1px solid #26263a;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.2rem; color: #7c5cff; }
+    .status { font-size: 0.8rem; color: #4ade80; margin-left: 8px; }
+    button {
+      background: #7c5cff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.secondary { background: #26263a; }
+    #config-panel {
+      background: #14141f;
+      border-bottom: 1px solid #26263a;
+      padding: 16px 20px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    label { font-size: 0.82rem; color: #a0a0b8; }
+    input {
+      background: #0a0a0f;
+      border: 1px solid #2e2e46;
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.95rem;
       width: 100%;
     }
-    h1 { font-size: 1.8rem; margin-bottom: 12px; color: #7c5cff; }
-    p { color: #a0a0b8; line-height: 1.5; }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .msg {
+      max-width: 82%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .user { background: #7c5cff; align-self: flex-end; }
+    .ai { background: #181826; border: 1px solid #26263a; align-self: flex-start; }
+    form {
+      background: #14141f;
+      border-top: 1px solid #26263a;
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>LUX-Omega</h1>
-    <p>Site público publicado e funcionando online.</p>
+  <header>
+    <div>
+      <h1 style="display:inline">LUX-Omega</h1>
+      <span class="status" id="mode-badge">Desconectado</span>
+    </div>
+    <button class="secondary" onclick="toggleConfig()">Conectar Motor</button>
+  </header>
+
+  <div id="config-panel">
+    <label>1. Link Público do Google Colab (prioritário):</label>
+    <input type="url" id="colab-url" placeholder="https://xxxx.trycloudflare.com">
+
+    <label>2. OU Chave API do Gemini (se o Colab estiver desligado):</label>
+    <input type="password" id="api-key" placeholder="AIza...">
+
+    <button onclick="saveConfig()">Salvar Conexão</button>
   </div>
+
+  <div id="chat">
+    <div class="msg ai">Clique em "Conectar Motor" no topo e cole o link gerado pelo seu Google Colab (ou uma chave Gemini).</div>
+  </div>
+
+  <form onsubmit="sendMessage(event)">
+    <input type="text" id="prompt" placeholder="Envie um comando para o LUX-Omega..." autocomplete="off" required>
+    <button type="submit" id="send-btn">Enviar</button>
+  </form>
+
+  <script>
+    const colabInput = document.getElementById('colab-url');
+    const keyInput = document.getElementById('api-key');
+    const badge = document.getElementById('mode-badge');
+    const chat = document.getElementById('chat');
+
+    function updateBadge() {
+      if (localStorage.getItem('lux_colab_url')) {
+        badge.textContent = '● Colab Ativo';
+        badge.style.color = '#4ade80';
+      } else if (localStorage.getItem('lux_api_key')) {
+        badge.textContent = '● Gemini API';
+        badge.style.color = '#60a5fa';
+      } else {
+        badge.textContent = '● Desconectado';
+        badge.style.color = '#f87171';
+      }
+    }
+
+    colabInput.value = localStorage.getItem('lux_colab_url') || '';
+    keyInput.value = localStorage.getItem('lux_api_key') || '';
+    updateBadge();
+
+    function toggleConfig() {
+      const panel = document.getElementById('config-panel');
+      panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function saveConfig() {
+      const cleanUrl = colabInput.value.trim().replace(/\/$/, '');
+      localStorage.setItem('lux_colab_url', cleanUrl);
+      localStorage.setItem('lux_api_key', keyInput.value.trim());
+      updateBadge();
+      toggleConfig();
+      addMessage('Conexão atualizada com sucesso.', 'ai');
+    }
+
+    function addMessage(text, role) {
+      const div = document.createElement('div');
+      div.className = `msg ${role}`;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      return div;
+    }
+
+    async function sendMessage(e) {
+      e.preventDefault();
+      const colabUrl = localStorage.getItem('lux_colab_url');
+      const apiKey = localStorage.getItem('lux_api_key');
+
+      if (!colabUrl && !apiKey) {
+        toggleConfig();
+        return alert('Configure o link do Colab ou a chave API primeiro.');
+      }
+
+      const input = document.getElementById('prompt');
+      const btn = document.getElementById('send-btn');
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      addMessage(userText, 'user');
+      input.value = '';
+      btn.disabled = true;
+      const loadingMsg = addMessage('Processando no motor...', 'ai');
+
+      try {
+        if (colabUrl) {
+          const res = await fetch(`${colabUrl}/executar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: userText })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || 'Erro no Colab');
+          loadingMsg.textContent = data.reply;
+        } else {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: userText }] }] })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error?.message || 'Erro na API');
+          loadingMsg.textContent = data.candidates[0].content.parts[0].text;
+        }
+      } catch (err) {
+        loadingMsg.textContent = 'Falha na conexão: ' + err.message + ' (Verifique se o Colab ainda está rodando)';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>
