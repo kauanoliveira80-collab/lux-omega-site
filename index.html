@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0a0a0f">
-  <title>LUX-Omega AI</title>
+  <meta name="theme-color" content="#09090e">
+  <title>LUX-Ω v9.0 Supreme Omnipotent</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #0a0a0f;
+      background: #09090e;
       color: #f4f4f8;
       font-family: system-ui, -apple-system, sans-serif;
       display: flex;
@@ -16,152 +16,533 @@
       height: 100vh;
     }
     header {
-      background: #14141f;
-      border-bottom: 1px solid #26263a;
-      padding: 14px 20px;
+      background: #12121c;
+      border-bottom: 1px solid #252538;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    header h1 { font-size: 1.2rem; color: #7c5cff; }
-    .status { font-size: 0.8rem; color: #4ade80; margin-left: 8px; }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand h1 { font-size: 1.1rem; color: #8b5cf6; }
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: #1c1c2b;
+      color: #facc15;
+    }
+    .controls { display: flex; gap: 6px; flex-wrap: wrap; }
     button {
-      background: #7c5cff;
+      background: #7c3aed;
       color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 8px 14px;
+      padding: 7px 11px;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
     }
-    button.secondary { background: #26263a; }
-    #config-panel {
-      background: #14141f;
-      border-bottom: 1px solid #26263a;
-      padding: 16px 20px;
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.sec { background: #222234; }
+    button.active { background: #059669; }
+    button.danger { background: #dc2626; }
+    .drawer {
+      background: #12121c;
+      border-bottom: 1px solid #252538;
+      padding: 14px 18px;
       display: none;
       flex-direction: column;
       gap: 10px;
+      max-height: 52vh;
+      overflow-y: auto;
     }
-    label { font-size: 0.82rem; color: #a0a0b8; }
-    input {
-      background: #0a0a0f;
-      border: 1px solid #2e2e46;
+    .drawer-head { display: flex; justify-content: space-between; align-items: center; }
+    label { font-size: 0.8rem; color: #9ca3af; }
+    input[type="text"], input[type="url"], input[type="password"], input[type="file"] {
+      background: #09090e;
+      border: 1px solid #2d2d44;
       color: #fff;
       border-radius: 8px;
-      padding: 10px;
-      font-size: 0.95rem;
+      padding: 9px;
+      font-size: 0.9rem;
       width: 100%;
     }
     #chat {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
     .msg {
-      max-width: 82%;
+      max-width: 88%;
       padding: 12px 16px;
-      border-radius: 12px;
-      line-height: 1.5;
+      border-radius: 14px;
+      line-height: 1.55;
       white-space: pre-wrap;
       word-wrap: break-word;
+      font-size: 0.94rem;
     }
-    .user { background: #7c5cff; align-self: flex-end; }
-    .ai { background: #181826; border: 1px solid #26263a; align-self: flex-start; }
-    form {
-      background: #14141f;
+    .user { background: #6d28d9; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .ai { background: #161624; border: 1px solid #26263a; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .media-box { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .media-box img, .media-box video {
+      max-width: 100%;
+      max-height: 420px;
+      border-radius: 10px;
+      border: 1px solid #2e2e48;
+      background: #000;
+    }
+    .dl-link {
+      display: inline-block;
+      background: #25253a;
+      color: #c4b5fd;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      width: fit-content;
+    }
+    .meta {
+      margin-top: 8px;
+      padding-top: 6px;
       border-top: 1px solid #26263a;
-      padding: 12px 16px;
+      font-size: 0.74rem;
+      color: #9ca3af;
       display: flex;
-      gap: 10px;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tool-tag { background: #25253a; color: #c4b5fd; padding: 2px 7px; border-radius: 6px; }
+    .mode-bar {
+      background: #0f0f18;
+      border-top: 1px solid #252538;
+      padding: 8px 14px 0;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+    .mode-pill {
+      background: #1c1c2c;
+      color: #cbd5e1;
+      padding: 5px 11px;
+      border-radius: 99px;
+      font-size: 0.79rem;
+      white-space: nowrap;
+    }
+    .mode-pill.selected { background: #7c3aed; color: #fff; }
+    form {
+      background: #0f0f18;
+      padding: 10px 14px 12px;
+      display: flex;
+      gap: 8px;
     }
   </style>
 </head>
 <body>
   <header>
-    <div>
-      <h1 style="display:inline">LUX-Omega</h1>
-      <span class="status" id="mode-badge">Desconectado</span>
+    <div class="brand">
+      <h1>LUX-Ω v9.0</h1>
+      <span class="badge" id="status-badge">● Sincronizando...</span>
     </div>
-    <button class="secondary" onclick="toggleConfig()">Conectar Motor</button>
+    <div class="controls">
+      <button class="sec" onclick="togglePanel('faceswap-panel')">🎭 Rosto</button>
+      <button class="sec" onclick="togglePanel('voice-panel')">🗣️ Clonar Voz</button>
+      <button class="sec" id="voice-toggle" onclick="toggleVoice()">🔇 Fala: OFF</button>
+      <button class="sec" onclick="verConsciencia()">🧬 Consciência</button>
+      <button class="sec" onclick="syncNtfy()">🔄 Sync</button>
+      <button class="sec" onclick="togglePanel('config-panel')">⚙️</button>
+    </div>
   </header>
 
-  <div id="config-panel">
-    <label>1. Link Público do Google Colab (prioritário):</label>
+  <!-- PAINEL DE CONFIGURAÇÃO -->
+  <div id="config-panel" class="drawer">
+    <div class="drawer-head">
+      <strong style="color:#a78bfa;">Conexão & Chaves</strong>
+      <button class="sec" onclick="togglePanel('config-panel')">Fechar</button>
+    </div>
+    <label>Canal de Sincronização (ntfy):</label>
+    <input type="text" id="ntfy-channel" value="lux-omega-kauan-v55">
+    <label>URL Ativa do Google Colab (automática):</label>
     <input type="url" id="colab-url" placeholder="https://xxxx.trycloudflare.com">
-
-    <label>2. OU Chave API do Gemini (se o Colab estiver desligado):</label>
+    <label>Chave API Google AI Studio (opcional — ativa Gemini 2.5 + todos os agentes):</label>
     <input type="password" id="api-key" placeholder="AIza...">
-
     <button onclick="saveConfig()">Salvar Conexão</button>
   </div>
 
+  <!-- PAINEL DE TROCA DE ROSTO -->
+  <div id="faceswap-panel" class="drawer">
+    <div class="drawer-head">
+      <strong style="color:#a78bfa;">🎭 Estúdio de Troca de Rosto (Fotos & Vídeos MP4)</strong>
+      <button class="sec" onclick="togglePanel('faceswap-panel')">Fechar</button>
+    </div>
+    <label>1. Foto do Rosto de Origem (fica salva no Drive para usar em qualquer geração):</label>
+    <input type="file" id="face-source" accept="image/*">
+    <label>2. Foto ou Vídeo MP4 Alvo (opcional — se deixar vazio, aplica na última mídia gerada):</label>
+    <input type="file" id="face-target" accept="image/*,video/*">
+    <button onclick="executarFaceSwap()">Executar Troca de Rosto na GPU</button>
+  </div>
+
+  <!-- PAINEL DE CLONAGEM DE VOZ -->
+  <div id="voice-panel" class="drawer">
+    <div class="drawer-head">
+      <strong style="color:#a78bfa;">🗣️ Estúdio de Cópia de Voz Neural (Zero-Shot PT-BR)</strong>
+      <button class="sec" onclick="togglePanel('voice-panel')">Fechar</button>
+    </div>
+    <label>Grave 10 segundos falando normalmente OU envie um arquivo de áudio (.wav/.mp3):</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button type="button" id="rec-voice-btn" onclick="toggleRecordSample()">🎙️ Gravar Amostra (10s)</button>
+      <input type="file" id="voice-file" accept="audio/*" style="flex:1;">
+      <button type="button" onclick="uploadVoiceFile()">Salvar Voz no Drive</button>
+    </div>
+    <div id="voice-status" style="font-size:0.82rem;color:#9ca3af;">Aguardando amostra de voz...</div>
+  </div>
+
+  <!-- PAINEL DE CONSCIÊNCIA & AUTO-DIAGNÓSTICO -->
+  <div id="memory-panel" class="drawer">
+    <div class="drawer-head">
+      <strong style="color:#a78bfa;">🧬 Estado Interno, VRAM, Reflexões Evolutivas & Arquivos</strong>
+      <button class="sec" onclick="togglePanel('memory-panel')">Fechar</button>
+    </div>
+    <div id="memory-content" style="font-size:0.85rem;color:#d1d5db;white-space:pre-wrap;">Lendo telemetria...</div>
+  </div>
+
   <div id="chat">
-    <div class="msg ai">Clique em "Conectar Motor" no topo e cole o link gerado pelo seu Google Colab (ou uma chave Gemini).</div>
+    <div class="msg ai">LUX-Ω v9.0 Supreme Omnipotent pronta. Selecione um modo abaixo ou envie qualquer comando de texto, código, imagem, vídeo, troca de rosto ou voz clonada.</div>
+  </div>
+
+  <div class="mode-bar">
+    <button type="button" class="mode-pill selected" id="mode-auto" onclick="setMode('auto')">💬 Auto / Cérebro</button>
+    <button type="button" class="mode-pill" id="mode-imagem" onclick="setMode('imagem')">🎨 Imagem HD</button>
+    <button type="button" class="mode-pill" id="mode-video" onclick="setMode('video')">🎬 Vídeo MP4</button>
+    <button type="button" class="mode-pill" id="mode-faceswap" onclick="setMode('faceswap')">🎭 Trocar Rosto</button>
+    <button type="button" class="mode-pill" id="mode-clonar_voz" onclick="setMode('clonar_voz')">🗣️ Falar c/ Voz Clonada</button>
+    <button type="button" class="mode-pill" id="mode-consciencia" onclick="setMode('consciencia')">🧬 Auto-Diagnóstico</button>
   </div>
 
   <form onsubmit="sendMessage(event)">
-    <input type="text" id="prompt" placeholder="Envie um comando para o LUX-Omega..." autocomplete="off" required>
+    <button type="button" class="sec" id="mic-btn" onclick="startDictation()" title="Ditar comando">🎙️</button>
+    <input type="text" id="prompt" placeholder="Envie um comando para a LUX-Ω v9.0..." autocomplete="off" required>
     <button type="submit" id="send-btn">Enviar</button>
   </form>
 
   <script>
+    const ntfyInput = document.getElementById('ntfy-channel');
     const colabInput = document.getElementById('colab-url');
     const keyInput = document.getElementById('api-key');
-    const badge = document.getElementById('mode-badge');
+    const badge = document.getElementById('status-badge');
     const chat = document.getElementById('chat');
+    let voiceEnabled = localStorage.getItem('lux_voice') === 'true';
+    let currentMode = 'auto';
+    let mediaRecorder = null;
+    let recordedChunks = [];
 
-    function updateBadge() {
+    ntfyInput.value = localStorage.getItem('lux_ntfy') || 'lux-omega-kauan-v55';
+    colabInput.value = localStorage.getItem('lux_colab_url') || '';
+    keyInput.value = localStorage.getItem('lux_api_key') || '';
+
+    function setMode(mode) {
+      currentMode = mode;
+      ['auto', 'imagem', 'video', 'faceswap', 'clonar_voz', 'consciencia'].forEach(m => {
+        const el = document.getElementById(`mode-${m}`);
+        if (el) el.classList.toggle('selected', m === mode);
+      });
+      const ph = {
+        auto: 'Peça código, pesquisa, vídeo, imagem, troca de rosto ou análise...',
+        imagem: 'Descreva a imagem HD 1024x1024 que deseja criar...',
+        video: 'Descreva a cena cinematográfica para renderizar em MP4...',
+        faceswap: 'Digite "aplicar" para trocar o rosto na última imagem/vídeo gerada...',
+        clonar_voz: 'Digite o texto que você quer ouvir na sua voz clonada...',
+        consciencia: 'Digite qualquer coisa para inspecionar o estado interno da IA...'
+      };
+      document.getElementById('prompt').placeholder = ph[mode] || ph.auto;
+    }
+
+    function updateVoiceButton() {
+      const btn = document.getElementById('voice-toggle');
+      btn.textContent = voiceEnabled ? '🔊 Fala: ON' : '🔇 Fala: OFF';
+      btn.className = voiceEnabled ? 'active' : 'sec';
+    }
+    updateVoiceButton();
+
+    function toggleVoice() {
+      voiceEnabled = !voiceEnabled;
+      localStorage.setItem('lux_voice', voiceEnabled);
+      updateVoiceButton();
+    }
+
+    function togglePanel(id) {
+      ['config-panel', 'faceswap-panel', 'voice-panel', 'memory-panel'].forEach(pid => {
+        const el = document.getElementById(pid);
+        if (pid === id) {
+          el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    function saveConfig() {
+      localStorage.setItem('lux_ntfy', ntfyInput.value.trim());
+      localStorage.setItem('lux_colab_url', colabInput.value.trim().replace(/\/$/, ''));
+      localStorage.setItem('lux_api_key', keyInput.value.trim());
+      updateBadge();
+      togglePanel('config-panel');
+      addMessage('Conexão atualizada.', 'ai');
+    }
+
+    function updateBadge(txt, color) {
+      if (txt) { badge.textContent = txt; badge.style.color = color; return; }
       if (localStorage.getItem('lux_colab_url')) {
-        badge.textContent = '● Colab Ativo';
+        badge.textContent = '● Supreme GPU Online';
         badge.style.color = '#4ade80';
-      } else if (localStorage.getItem('lux_api_key')) {
-        badge.textContent = '● Gemini API';
-        badge.style.color = '#60a5fa';
       } else {
-        badge.textContent = '● Desconectado';
+        badge.textContent = '● Aguardando Colab';
         badge.style.color = '#f87171';
       }
     }
 
-    colabInput.value = localStorage.getItem('lux_colab_url') || '';
-    keyInput.value = localStorage.getItem('lux_api_key') || '';
-    updateBadge();
-
-    function toggleConfig() {
-      const panel = document.getElementById('config-panel');
-      panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    function saveConfig() {
-      const cleanUrl = colabInput.value.trim().replace(/\/$/, '');
-      localStorage.setItem('lux_colab_url', cleanUrl);
-      localStorage.setItem('lux_api_key', keyInput.value.trim());
-      updateBadge();
-      toggleConfig();
-      addMessage('Conexão atualizada com sucesso.', 'ai');
-    }
-
-    function addMessage(text, role) {
+    function addMessage(text, role, meta = null) {
       const div = document.createElement('div');
       div.className = `msg ${role}`;
       div.textContent = text;
+      const baseUrl = localStorage.getItem('lux_colab_url') || '';
+
+      if (meta && meta.image_file && baseUrl) {
+        const box = document.createElement('div');
+        box.className = 'media-box';
+        const url = `${baseUrl}/arquivo/${encodeURIComponent(meta.image_file)}`;
+        const img = document.createElement('img');
+        img.src = url;
+        const dl = document.createElement('a');
+        dl.href = url; dl.download = meta.image_file; dl.target = '_blank';
+        dl.className = 'dl-link';
+        dl.textContent = `⬇️ Baixar Imagem (${meta.image_file})`;
+        box.appendChild(img); box.appendChild(dl);
+        div.appendChild(box);
+      }
+
+      if (meta && meta.video_file && baseUrl) {
+        const box = document.createElement('div');
+        box.className = 'media-box';
+        const url = `${baseUrl}/arquivo/${encodeURIComponent(meta.video_file)}`;
+        const vid = document.createElement('video');
+        vid.src = url; vid.controls = true; vid.autoplay = true; vid.loop = true; vid.playsInline = true;
+        const dl = document.createElement('a');
+        dl.href = url; dl.download = meta.video_file; dl.target = '_blank';
+        dl.className = 'dl-link';
+        dl.textContent = `⬇️ Baixar Vídeo MP4 (${meta.video_file})`;
+        box.appendChild(vid); box.appendChild(dl);
+        div.appendChild(box);
+      }
+
+      if (meta && meta.audio_file && baseUrl) {
+        const box = document.createElement('div');
+        box.className = 'media-box';
+        const url = `${baseUrl}/arquivo/${encodeURIComponent(meta.audio_file)}`;
+        const aud = document.createElement('audio');
+        aud.src = url; aud.controls = true; aud.autoplay = true;
+        box.appendChild(aud);
+        div.appendChild(box);
+      }
+
+      if (meta && (meta.brain || (meta.tools && meta.tools.length))) {
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'meta';
+        if (meta.brain) {
+          const b = document.createElement('span');
+          b.textContent = `🧠 ${meta.brain}`;
+          metaDiv.appendChild(b);
+        }
+        if (meta.tools) {
+          meta.tools.forEach(t => {
+            const tag = document.createElement('span');
+            tag.className = 'tool-tag';
+            tag.textContent = `⚡ ${t}`;
+            metaDiv.appendChild(tag);
+          });
+        }
+        div.appendChild(metaDiv);
+      }
+
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
       return div;
     }
 
+    function extractUrl(raw) {
+      const m = raw.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/g);
+      return m ? m[m.length - 1] : null;
+    }
+
+    async function syncNtfy(silent = false) {
+      const ch = (localStorage.getItem('lux_ntfy') || 'lux-omega-kauan-v55').trim();
+      updateBadge('● Sincronizando...', '#facc15');
+      try {
+        const res = await fetch(`https://ntfy.sh/${encodeURIComponent(ch)}/json?poll=1&since=12h`);
+        const txt = await res.text();
+        let found = null;
+        for (const line of txt.split('\n')) {
+          if (!line.trim()) continue;
+          const u = extractUrl(line);
+          if (u) found = u;
+        }
+        if (found) {
+          const old = localStorage.getItem('lux_colab_url');
+          localStorage.setItem('lux_colab_url', found);
+          colabInput.value = found;
+          updateBadge();
+          if (!silent || old !== found) addMessage(`Supreme GPU conectado:\n${found}`, 'ai');
+        } else {
+          updateBadge();
+          if (!silent) addMessage('Nenhum link ativo encontrado. Inicie o notebook no Colab.', 'ai');
+        }
+      } catch (e) {
+        updateBadge();
+        if (!silent) addMessage('Erro ao consultar canal: ' + e.message, 'ai');
+      }
+    }
+
+    function listenLive() {
+      const ch = (localStorage.getItem('lux_ntfy') || 'lux-omega-kauan-v55').trim();
+      const es = new EventSource(`https://ntfy.sh/${encodeURIComponent(ch)}/sse`);
+      es.onmessage = (ev) => {
+        const u = extractUrl(ev.data);
+        if (u && u !== localStorage.getItem('lux_colab_url')) {
+          localStorage.setItem('lux_colab_url', u);
+          colabInput.value = u;
+          updateBadge();
+          addMessage(`Novo túnel GPU detectado ao vivo:\n${u}`, 'ai');
+        }
+      };
+    }
+
+    async function executarFaceSwap() {
+      const url = localStorage.getItem('lux_colab_url');
+      if (!url) return alert('Conecte o Google Colab primeiro.');
+      const srcFile = document.getElementById('face-source').files[0];
+      const tgtFile = document.getElementById('face-target').files[0];
+
+      const fd = new FormData();
+      if (srcFile) fd.append('rosto_origem', srcFile);
+      if (tgtFile) fd.append('midia_alvo', tgtFile);
+      fd.append('salvar_como_padrao', 'true');
+
+      togglePanel('faceswap-panel');
+      const loading = addMessage('🎭 Processando Troca de Rosto (InsightFace InSwapper-128 na GPU)...', 'ai');
+      try {
+        const res = await fetch(`${url}/faceswap`, { method: 'POST', body: fd });
+        const data = await res.json();
+        loading.remove();
+        addMessage(data.reply, 'ai', {
+          brain: data.brain,
+          tools: data.tools,
+          image_file: data.image_file,
+          video_file: data.video_file
+        });
+      } catch (e) {
+        loading.textContent = 'Erro no Face Swap: ' + e.message;
+      }
+    }
+
+    async function enviarBlobVoz(blob, filename = 'amostra.webm') {
+      const url = localStorage.getItem('lux_colab_url');
+      if (!url) return alert('Conecte o Google Colab primeiro.');
+      const st = document.getElementById('voice-status');
+      st.textContent = 'Enviando e calibrando timbre vocal no Google Drive...';
+      const fd = new FormData();
+      fd.append('audio', blob, filename);
+      try {
+        const res = await fetch(`${url}/upload-voz`, { method: 'POST', body: fd });
+        const data = await res.json();
+        st.textContent = '✅ ' + data.mensagem;
+        addMessage('🗣️ Perfil de voz clonada salvo no Google Drive! Ative "Fala: ON" ou use o modo "Falar c/ Voz Clonada".', 'ai');
+      } catch (e) {
+        st.textContent = 'Erro: ' + e.message;
+      }
+    }
+
+    function uploadVoiceFile() {
+      const f = document.getElementById('voice-file').files[0];
+      if (!f) return alert('Selecione um arquivo de áudio primeiro.');
+      enviarBlobVoz(f, f.name);
+    }
+
+    async function toggleRecordSample() {
+      const btn = document.getElementById('rec-voice-btn');
+      const st = document.getElementById('voice-status');
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        btn.textContent = '🎙️ Gravar Amostra (10s)';
+        btn.className = '';
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+          enviarBlobVoz(blob, 'gravacao_mic.webm');
+        };
+        mediaRecorder.start();
+        btn.textContent = '⏹️ Parar & Salvar Voz';
+        btn.className = 'danger';
+        st.textContent = '🔴 Gravando sua voz... Fale por 8 a 12 segundos e clique em Parar.';
+      } catch (e) {
+        alert('Erro ao acessar microfone: ' + e.message);
+      }
+    }
+
+    async function verConsciencia() {
+      togglePanel('memory-panel');
+      const box = document.getElementById('memory-content');
+      const url = localStorage.getItem('lux_colab_url');
+      if (!url) { box.textContent = 'Colab desconectado.'; return; }
+      box.textContent = 'Consultando telemetria interna e memória...';
+      try {
+        const res = await fetch(`${url}/memoria`);
+        const d = await res.json();
+        box.textContent =
+          `SISTEMA: ${d.nome} (Ativo há ${d.tempo_ativo_min} min)\n` +
+          `GPU: ${d.gpu.nome} | VRAM Livre: ${d.gpu.vram_livre_gb} GB / ${d.gpu.vram_total_gb} GB\n` +
+          `MODELO EM MEMÓRIA: ${d.modelo_em_vram}\n` +
+          `PERFIL VOZ CLONADA: ${d.perfil_voz_clonada_ativo ? 'ATIVO' : 'Não gravado'} | ROSTO PADRÃO: ${d.perfil_rosto_padrao_ativo ? 'ATIVO' : 'Não enviado'}\n\n` +
+          `MEMÓRIA PERMANENTE:\n${d.fatos.map(f => `• ${f.chave}: ${f.valor}`).join('\n')}\n\n` +
+          `DIÁRIO DE AUTO-EVOLUÇÃO:\n${d.reflexoes_evolutivas.map(r => `• [${r.categoria}] ${r.insight}`).join('\n') || 'Nenhuma reflexão registrada ainda.'}\n\n` +
+          `ARQUIVOS NO GOOGLE DRIVE:\n${d.arquivos_workspace.join(', ') || 'Nenhum arquivo ainda.'}`;
+      } catch (e) {
+        box.textContent = 'Erro: ' + e.message;
+      }
+    }
+
+    function startDictation() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) return alert('Seu navegador não suporta ditado por voz.');
+      const rec = new SR();
+      rec.lang = 'pt-BR';
+      const micBtn = document.getElementById('mic-btn');
+      micBtn.className = 'active';
+      rec.onresult = (e) => { document.getElementById('prompt').value = e.results[0][0].transcript; };
+      rec.onend = () => { micBtn.className = 'sec'; };
+      rec.start();
+    }
+
     async function sendMessage(e) {
       e.preventDefault();
-      const colabUrl = localStorage.getItem('lux_colab_url');
-      const apiKey = localStorage.getItem('lux_api_key');
-
-      if (!colabUrl && !apiKey) {
-        toggleConfig();
-        return alert('Configure o link do Colab ou a chave API primeiro.');
+      let colabUrl = localStorage.getItem('lux_colab_url');
+      const apiKey = localStorage.getItem('lux_api_key') || '';
+      if (!colabUrl) {
+        await syncNtfy(true);
+        colabUrl = localStorage.getItem('lux_colab_url');
+        if (!colabUrl) return alert('Colab desconectado. Execute o notebook no Google Colab.');
       }
 
       const input = document.getElementById('prompt');
@@ -172,34 +553,44 @@
       addMessage(userText, 'user');
       input.value = '';
       btn.disabled = true;
-      const loadingMsg = addMessage('Processando no motor...', 'ai');
+      const loading = addMessage('⚡ Processando no núcleo LUX-Ω v9.0...', 'ai');
 
       try {
-        if (colabUrl) {
-          const res = await fetch(`${colabUrl}/executar`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: userText })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.detail || 'Erro no Colab');
-          loadingMsg.textContent = data.reply;
-        } else {
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: userText }] }] })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error?.message || 'Erro na API');
-          loadingMsg.textContent = data.candidates[0].content.parts[0].text;
+        const res = await fetch(`${colabUrl}/executar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: userText,
+            api_key: apiKey,
+            voice: voiceEnabled,
+            mode: currentMode
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+
+        loading.remove();
+        addMessage(data.reply, 'ai', {
+          brain: data.brain,
+          tools: data.tools,
+          image_file: data.image_file,
+          video_file: data.video_file,
+          audio_file: data.audio_file
+        });
+
+        if (voiceEnabled && data.audio_b64) {
+          new Audio('data:audio/wav;base64,' + data.audio_b64).play();
         }
       } catch (err) {
-        loadingMsg.textContent = 'Falha na conexão: ' + err.message + ' (Verifique se o Colab ainda está rodando)';
+        loading.textContent = `Falha (${err.message}). Clique em "Sync" se o Colab reiniciou.`;
       } finally {
         btn.disabled = false;
       }
     }
+
+    updateBadge();
+    syncNtfy(true);
+    listenLive();
   </script>
 </body>
 </html>
