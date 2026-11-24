@@ -5,280 +5,443 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LUX-Omega</title>
   <style>
+    :root {
+      --bg: #131314;
+      --surface: #1e1f20;
+      --surface-2: #282a2c;
+      --border: #333537;
+      --text: #e3e3e3;
+      --muted: #9aa0a6;
+      --primary: #a8c7fa;
+      --primary-ink: #062e6f;
+      --user-bubble: #2b2c2f;
+      --ok: #81c995;
+      --warn: #fdd663;
+      --err: #f28b82;
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       height: 100%;
       width: 100%;
-      background: #0b0d14;
-      color: #f3f4f6;
-      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Google Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .app {
+    .shell {
       display: flex;
       flex-direction: column;
       height: 100vh;
-      width: 100%;
-      position: relative;
-      z-index: 1;
+      max-width: 100%;
+      overflow: hidden;
     }
     .topbar {
+      height: 58px;
+      padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 12px 16px;
-      background: #141824;
-      border-bottom: 1px solid #262d42;
-      position: relative;
-      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
-    .title-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .title-wrap h1 { font-size: 1.1rem; color: #a78bfa; }
-    #status-txt { font-size: 0.85rem; color: #facc15; }
-    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--warn);
+    }
+    .brand-dot.ok { background: var(--ok); }
+    .brand-dot.err { background: var(--err); }
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .status-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      max-width: 340px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     button {
       appearance: none;
-      -webkit-appearance: none;
-      background: #7c3aed;
-      color: #ffffff;
-      border: 1px solid #8b5cf6;
-      border-radius: 8px;
-      padding: 9px 14px;
-      font-size: 0.9rem;
-      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.84rem;
+      font-weight: 500;
       cursor: pointer;
-      pointer-events: auto !important;
-      position: relative;
-      z-index: 20;
+      transition: background 0.15s ease, border-color 0.15s ease;
     }
-    button:hover { background: #6d28d9; }
-    button.sec { background: #1f2536; border-color: #333d58; }
-    button.sec:hover { background: #293147; }
-    #cfg-box {
+    button:hover { background: var(--surface-2); border-color: #4a4d50; }
+    button.primary {
+      background: var(--primary);
+      color: var(--primary-ink);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+    button.primary:hover { filter: brightness(0.95); }
+    .drawer {
       display: none;
-      padding: 14px 16px;
-      background: #141824;
-      border-bottom: 1px solid #262d42;
-      position: relative;
-      z-index: 15;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      flex-shrink: 0;
     }
-    #cfg-box.open { display: block; }
-    .cfg-grid {
+    .drawer.open { display: block; }
+    .drawer-inner {
+      max-width: 820px;
+      margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 12px;
     }
-    label { display: block; font-size: 0.78rem; color: #9ca3af; margin-bottom: 4px; }
-    input {
+    .field label {
+      display: block;
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .field input {
       width: 100%;
-      padding: 10px 12px;
-      background: #0b0d14;
-      color: #ffffff;
-      border: 1px solid #333d58;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      pointer-events: auto !important;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.9rem;
+      outline: none;
     }
-    #msgs {
+    .field input:focus { border-color: var(--primary); }
+    .drawer-footer {
+      max-width: 820px;
+      margin: 12px auto 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .stream {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      padding: 24px 16px 120px;
+    }
+    .stream-inner {
+      max-width: 820px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      position: relative;
-      z-index: 2;
+      gap: 20px;
     }
-    .msg {
-      max-width: 85%;
-      padding: 10px 14px;
-      border-radius: 10px;
-      line-height: 1.45;
+    .row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .row.user { align-items: flex-end; }
+    .row.assistant { align-items: flex-start; }
+    .role-tag {
+      font-size: 0.74rem;
+      color: var(--muted);
+      padding: 0 4px;
+    }
+    .bubble-user {
+      background: var(--user-bubble);
+      color: var(--text);
+      border-radius: 20px 20px 6px 20px;
+      padding: 12px 16px;
+      max-width: 78%;
+      line-height: 1.5;
+      font-size: 0.95rem;
       white-space: pre-wrap;
       word-break: break-word;
-      font-size: 0.92rem;
     }
-    .msg.u { background: #7c3aed; align-self: flex-end; }
-    .msg.a { background: #181d2c; border: 1px solid #262d42; align-self: flex-start; }
-    .composer {
+    .bubble-assistant {
+      width: 100%;
+      color: var(--text);
+      line-height: 1.62;
+      font-size: 0.98rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      padding: 2px 4px;
+    }
+    .composer-wrap {
+      padding: 12px 16px 18px;
+      background: linear-gradient(to top, var(--bg) 75%, rgba(19,19,20,0));
+      flex-shrink: 0;
+    }
+    .composer-box {
+      max-width: 820px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 10px 12px 10px 18px;
       display: flex;
-      gap: 8px;
-      padding: 12px 16px;
-      background: #141824;
-      border-top: 1px solid #262d42;
-      position: relative;
-      z-index: 10;
+      align-items: flex-end;
+      gap: 10px;
     }
-    #prompt-inp { flex: 1; }
+    .composer-box:focus-within { border-color: #5f6368; }
+    textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.96rem;
+      line-height: 1.45;
+      max-height: 180px;
+      min-height: 24px;
+      resize: none;
+      outline: none;
+      padding: 4px 0;
+    }
+    .send-btn {
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .hint {
+      max-width: 820px;
+      margin: 8px auto 0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="topbar">
-      <div class="title-wrap">
-        <h1>LUX-Omega</h1>
-        <span id="status-txt">Aguardando sincronização</span>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span id="dot" class="brand-dot"></span>
+        <span class="brand-title">LUX-Omega</span>
+        <span id="status" class="status-label">Desconectado</span>
       </div>
-      <div class="btn-row">
-        <button type="button" class="sec" id="btn-sync">Sincronizar</button>
-        <button type="button" class="sec" id="btn-cfg">Configurar</button>
-        <button type="button" class="sec" id="btn-test">Testar /health</button>
+      <div class="top-actions">
+        <button type="button" id="btn-sync">Sincronizar</button>
+        <button type="button" id="btn-health">Testar</button>
+        <button type="button" id="btn-config">Configurar</button>
       </div>
-    </div>
+    </header>
 
-    <div id="cfg-box">
-      <div class="cfg-grid">
-        <div>
+    <section id="drawer" class="drawer">
+      <div class="drawer-inner">
+        <div class="field">
           <label for="inp-ntfy">Canal ntfy.sh</label>
           <input type="text" id="inp-ntfy" value="lux-omega-kauan-v55" />
         </div>
-        <div>
+        <div class="field">
           <label for="inp-url">URL do Colab / Túnel</label>
           <input type="url" id="inp-url" placeholder="https://xxxx.trycloudflare.com" />
         </div>
-        <div>
-          <label for="inp-route">Rota</label>
+        <div class="field">
+          <label for="inp-route">Rota POST</label>
           <input type="text" id="inp-route" value="/executar" />
         </div>
       </div>
-      <button type="button" id="btn-save">Salvar</button>
-    </div>
+      <div class="drawer-footer">
+        <button type="button" id="btn-cancel">Fechar</button>
+        <button type="button" class="primary" id="btn-save">Salvar</button>
+      </div>
+    </section>
 
-    <div id="msgs">
-      <div class="msg a">Painel pronto. Clique em "Sincronizar" ou em "Configurar" para colar a URL do túnel.</div>
-    </div>
+    <main id="stream" class="stream">
+      <div id="stream-inner" class="stream-inner">
+        <div class="row assistant">
+          <span class="role-tag">LUX-Omega</span>
+          <div class="bubble-assistant">Pronto. Clique em Sincronizar para buscar o túnel no canal ntfy.sh ou em Configurar para colar a URL do Colab.</div>
+        </div>
+      </div>
+    </main>
 
-    <div class="composer">
-      <input type="text" id="prompt-inp" placeholder="Digite sua mensagem e pressione Enviar..." />
-      <button type="button" id="btn-send">Enviar</button>
+    <div class="composer-wrap">
+      <div class="composer-box">
+        <textarea id="prompt" rows="1" placeholder="Pergunte qualquer coisa..."></textarea>
+        <button type="button" class="primary send-btn" id="btn-send" title="Enviar">➤</button>
+      </div>
+      <div class="hint">Enter envia • Shift+Enter quebra linha</div>
     </div>
   </div>
 
   <script>
     (function () {
-      const elStatus = document.getElementById('status-txt');
-      const elCfgBox = document.getElementById('cfg-box');
-      const elNtfy = document.getElementById('inp-ntfy');
-      const elUrl = document.getElementById('inp-url');
-      const elRoute = document.getElementById('inp-route');
-      const elMsgs = document.getElementById('msgs');
-      const elPrompt = document.getElementById('prompt-inp');
+      const dot = document.getElementById('dot');
+      const statusEl = document.getElementById('status');
+      const drawer = document.getElementById('drawer');
+      const inpNtfy = document.getElementById('inp-ntfy');
+      const inpUrl = document.getElementById('inp-url');
+      const inpRoute = document.getElementById('inp-route');
+      const stream = document.getElementById('stream');
+      const streamInner = document.getElementById('stream-inner');
+      const promptEl = document.getElementById('prompt');
 
-      elNtfy.value = localStorage.getItem('lux_ntfy') || 'lux-omega-kauan-v55';
-      elUrl.value = localStorage.getItem('lux_url') || '';
-      elRoute.value = localStorage.getItem('lux_route') || '/executar';
+      inpNtfy.value = localStorage.getItem('lux_ntfy') || 'lux-omega-kauan-v55';
+      inpUrl.value = localStorage.getItem('lux_url') || '';
+      inpRoute.value = localStorage.getItem('lux_route') || '/executar';
 
-      function logMsg(txt, role) {
-        const d = document.createElement('div');
-        d.className = 'msg ' + (role === 'u' ? 'u' : 'a');
-        d.textContent = txt;
-        elMsgs.appendChild(d);
-        elMsgs.scrollTop = elMsgs.scrollHeight;
-        return d;
+      function setStatus(text, state) {
+        statusEl.textContent = text;
+        dot.className = 'brand-dot' + (state ? ' ' + state : '');
       }
 
-      function refreshStatus() {
+      function syncStatusFromStorage() {
         const u = (localStorage.getItem('lux_url') || '').trim();
-        elStatus.textContent = u ? ('Conectado: ' + u) : 'Sem URL configurada';
+        if (u) setStatus(u, 'ok');
+        else setStatus('Sem URL configurada', '');
       }
 
-      document.getElementById('btn-cfg').addEventListener('click', function () {
-        elCfgBox.classList.toggle('open');
+      function appendTurn(role, text) {
+        const row = document.createElement('div');
+        row.className = 'row ' + (role === 'user' ? 'user' : 'assistant');
+
+        const tag = document.createElement('span');
+        tag.className = 'role-tag';
+        tag.textContent = role === 'user' ? 'Você' : 'LUX-Omega';
+
+        const bubble = document.createElement('div');
+        bubble.className = role === 'user' ? 'bubble-user' : 'bubble-assistant';
+        bubble.textContent = text;
+
+        row.appendChild(tag);
+        row.appendChild(bubble);
+        streamInner.appendChild(row);
+        stream.scrollTop = stream.scrollHeight;
+        return bubble;
+      }
+
+      function autoGrow() {
+        promptEl.style.height = 'auto';
+        promptEl.style.height = Math.min(promptEl.scrollHeight, 180) + 'px';
+      }
+
+      promptEl.addEventListener('input', autoGrow);
+
+      document.getElementById('btn-config').addEventListener('click', function () {
+        drawer.classList.toggle('open');
+      });
+
+      document.getElementById('btn-cancel').addEventListener('click', function () {
+        drawer.classList.remove('open');
       });
 
       document.getElementById('btn-save').addEventListener('click', function () {
-        const cleanU = elUrl.value.trim().replace(/\/+$/, '');
-        const cleanR = (elRoute.value.trim() || '/executar');
-        localStorage.setItem('lux_ntfy', elNtfy.value.trim() || 'lux-omega-kauan-v55');
-        localStorage.setItem('lux_url', cleanU);
-        localStorage.setItem('lux_route', cleanR.startsWith('/') ? cleanR : '/' + cleanR);
-        elUrl.value = cleanU;
-        elCfgBox.classList.remove('open');
-        refreshStatus();
-        logMsg('Configuração salva.', 'a');
+        const cleanUrl = inpUrl.value.trim().replace(/\/+$/, '');
+        const rawRoute = (inpRoute.value.trim() || '/executar');
+        const cleanRoute = rawRoute.startsWith('/') ? rawRoute : '/' + rawRoute;
+        localStorage.setItem('lux_ntfy', inpNtfy.value.trim() || 'lux-omega-kauan-v55');
+        localStorage.setItem('lux_url', cleanUrl);
+        localStorage.setItem('lux_route', cleanRoute);
+        inpUrl.value = cleanUrl;
+        inpRoute.value = cleanRoute;
+        drawer.classList.remove('open');
+        syncStatusFromStorage();
+        appendTurn('assistant', 'Configuração salva.');
       });
 
       document.getElementById('btn-sync').addEventListener('click', async function () {
-        const ch = (elNtfy.value.trim() || 'lux-omega-kauan-v55');
-        elStatus.textContent = 'Buscando no ntfy...';
+        const channel = (inpNtfy.value.trim() || 'lux-omega-kauan-v55');
+        setStatus('Sincronizando...', '');
         try {
-          const r = await fetch('https://ntfy.sh/' + encodeURIComponent(ch) + '/json?poll=1&since=24h');
-          const txt = await r.text();
+          const res = await fetch('https://ntfy.sh/' + encodeURIComponent(channel) + '/json?poll=1&since=24h');
+          const raw = await res.text();
           let found = null;
-          for (const line of txt.split('
+          for (const line of raw.split('
 ')) {
             if (!line.trim()) continue;
-            const m = line.match(/https?:\/\/[a-zA-Z0-9.-]+\.(?:trycloudflare\.com|loca\.lt|ngrok-free\.app|ngrok\.io)|http:\/\/bore\.pub:\d+/g);
-            if (m && m.length) found = m[m.length - 1];
+            const matches = line.match(/https?:\/\/[a-zA-Z0-9.-]+\.(?:trycloudflare\.com|loca\.lt|ngrok-free\.app|ngrok\.io)|http:\/\/bore\.pub:\d+/g);
+            if (matches && matches.length) found = matches[matches.length - 1];
           }
           if (found) {
             found = found.replace(/\/+$/, '');
             localStorage.setItem('lux_url', found);
-            elUrl.value = found;
-            refreshStatus();
-            logMsg('URL encontrada: ' + found, 'a');
+            inpUrl.value = found;
+            setStatus(found, 'ok');
+            appendTurn('assistant', 'Conectado a ' + found);
           } else {
-            refreshStatus();
-            logMsg('Nenhuma URL encontrada no canal ' + ch + '.', 'a');
+            syncStatusFromStorage();
+            appendTurn('assistant', 'Nenhum link encontrado no canal ' + channel + '.');
           }
         } catch (err) {
-          refreshStatus();
-          logMsg('Erro ao sincronizar: ' + err.message, 'a');
+          setStatus('Erro ao sincronizar', 'err');
+          appendTurn('assistant', 'Falha ao consultar ntfy.sh: ' + err.message);
         }
       });
 
-      document.getElementById('btn-test').addEventListener('click', async function () {
-        const u = (localStorage.getItem('lux_url') || elUrl.value || '').trim().replace(/\/+$/, '');
-        if (!u) {
-          logMsg('Informe ou sincronize uma URL primeiro.', 'a');
+      document.getElementById('btn-health').addEventListener('click', async function () {
+        const baseUrl = (localStorage.getItem('lux_url') || inpUrl.value || '').trim().replace(/\/+$/, '');
+        if (!baseUrl) {
+          appendTurn('assistant', 'Informe ou sincronize uma URL primeiro.');
           return;
         }
-        const b = logMsg('Testando ' + u + '/health ...', 'a');
+        const bubble = appendTurn('assistant', 'Testando ' + baseUrl + '/health ...');
         try {
-          const r = await fetch(u + '/health');
-          const t = await r.text();
-          b.textContent = 'HTTP ' + r.status + ': ' + t;
+          const res = await fetch(baseUrl + '/health');
+          const txt = await res.text();
+          setStatus(baseUrl, res.ok ? 'ok' : 'err');
+          bubble.textContent = 'HTTP ' + res.status + ' — ' + txt;
         } catch (err) {
-          b.textContent = 'Falha em /health: ' + err.message;
+          setStatus('Sem resposta', 'err');
+          bubble.textContent = 'Falha em /health: ' + err.message;
         }
       });
 
-      async function sendNow() {
-        const u = (localStorage.getItem('lux_url') || elUrl.value || '').trim().replace(/\/+$/, '');
-        const rawRoute = (localStorage.getItem('lux_route') || elRoute.value || '/executar').trim();
+      async function sendPrompt() {
+        const baseUrl = (localStorage.getItem('lux_url') || inpUrl.value || '').trim().replace(/\/+$/, '');
+        const rawRoute = (localStorage.getItem('lux_route') || inpRoute.value || '/executar').trim();
         const route = rawRoute.startsWith('/') ? rawRoute : '/' + rawRoute;
-        const prompt = elPrompt.value.trim();
-        if (!prompt) return;
-        if (!u) {
-          logMsg('Configure ou sincronize a URL antes de enviar.', 'a');
+        const text = promptEl.value.trim();
+        if (!text) return;
+        if (!baseUrl) {
+          appendTurn('assistant', 'Configure ou sincronize a URL do Colab antes de enviar.');
           return;
         }
-        logMsg(prompt, 'u');
-        elPrompt.value = '';
-        const replyBox = logMsg('Enviando...', 'a');
+        appendTurn('user', text);
+        promptEl.value = '';
+        autoGrow();
+        const replyBubble = appendTurn('assistant', 'Pensando...');
         try {
-          const r = await fetch(u + route, {
+          const res = await fetch(baseUrl + route, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: prompt, message: prompt, text: prompt })
+            body: JSON.stringify({ prompt: text, message: text, text: text })
           });
-          const data = await r.json();
-          replyBox.textContent = data.reply || data.response || data.output || JSON.stringify(data, null, 2);
+          const data = await res.json();
+          replyBubble.textContent = data.reply || data.response || data.output || data.text || JSON.stringify(data, null, 2);
         } catch (err) {
-          replyBox.textContent = 'Erro ao enviar: ' + err.message;
+          replyBubble.textContent = 'Erro na requisição: ' + err.message;
         }
       }
 
-      document.getElementById('btn-send').addEventListener('click', sendNow);
-      elPrompt.addEventListener('keydown', function (ev) {
-        if (ev.key === 'Enter') {
+      document.getElementById('btn-send').addEventListener('click', sendPrompt);
+      promptEl.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' && !ev.shiftKey) {
           ev.preventDefault();
-          sendNow();
+          sendPrompt();
         }
       });
 
-      refreshStatus();
+      syncStatusFromStorage();
     })();
   </script>
 </body>
