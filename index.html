@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LUX-Ω — Workspace & Estúdio Colab</title>
+<title>LUX-Ω — Workspace, CreativeField & Colab</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -53,7 +53,7 @@
   .icon-btn:hover { background: var(--surface-2); }
   .logo-badge {
     width: 30px; height: 30px; border-radius: 9px;
-    background: linear-gradient(135deg, #1a73e8, #8ab4f8);
+    background: linear-gradient(135deg, #1a73e8, #5e35b1);
     color: #fff; font-weight: 700; font-size: 15px;
     display: inline-flex; align-items: center; justify-content: center;
   }
@@ -70,7 +70,7 @@
   .workspace { flex: 1; display: flex; min-height: 0; overflow: hidden; }
 
   .sidebar {
-    width: 274px;
+    width: 288px;
     background: var(--surface);
     border-right: 1px solid var(--border);
     display: flex;
@@ -82,13 +82,13 @@
   }
   .sidebar.collapsed { display: none; }
   .sb-section-title {
-    font-size: 0.74rem; font-weight: 600; text-transform: uppercase;
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
     letter-spacing: 0.5px; color: var(--muted); padding: 2px 6px;
   }
-  .nav-list { display: flex; flex-direction: column; gap: 4px; }
+  .nav-list { display: flex; flex-direction: column; gap: 3px; }
   .nav-item {
-    width: 100%; text-align: left; padding: 9px 12px; border-radius: 10px;
-    border: none; background: transparent; color: var(--text); font-size: 0.9rem;
+    width: 100%; text-align: left; padding: 8px 11px; border-radius: 10px;
+    border: none; background: transparent; color: var(--text); font-size: 0.88rem;
     font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px;
   }
   .nav-item:hover { background: var(--surface-2); }
@@ -114,9 +114,9 @@
     box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.14);
   }
   .btn {
-    border: none; border-radius: 999px; padding: 8px 14px; font-size: 0.86rem;
+    border: none; border-radius: 999px; padding: 8px 14px; font-size: 0.85rem;
     font-weight: 600; cursor: pointer; display: inline-flex; align-items: center;
-    justify-content: center; gap: 6px;
+    justify-content: center; gap: 6px; text-decoration: none;
   }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-primary:hover { background: var(--accent-hover); }
@@ -129,14 +129,37 @@
   .view-pane.active { display: flex; }
 
   .stream-area { flex: 1; overflow-y: auto; padding: 24px 20px; }
-  .stream-inner { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
-  .hero-greeting { padding: 12px 0 6px; }
+  .stream-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  .hero-greeting { padding: 8px 0 4px; }
   .hero-greeting h1 {
-    margin: 0 0 6px; font-size: 1.75rem; font-weight: 600;
+    margin: 0 0 6px; font-size: 1.7rem; font-weight: 600;
     background: linear-gradient(90deg, #1a73e8, #5e35b1);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   }
-  .hero-greeting p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .hero-greeting p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+
+  .shortcut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .shortcut-tile {
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .shortcut-tile:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .shortcut-tile strong { font-size: 0.9rem; color: var(--text); }
+  .shortcut-tile span { font-size: 0.78rem; color: var(--muted); }
 
   .msg-row { display: flex; flex-direction: column; gap: 6px; }
   .msg-user {
@@ -175,6 +198,25 @@
   .studio-card p.desc { margin: 0; font-size: 0.88rem; color: var(--muted); }
   .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 
+  .embed-frame {
+    width: 100%;
+    flex: 1;
+    min-height: 460px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+  .embed-bar {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
   .composer-wrap {
     border-top: 1px solid var(--border-soft);
     background: var(--bg);
@@ -182,7 +224,7 @@
     flex-shrink: 0;
   }
   .composer-box {
-    max-width: 820px; margin: 0 auto;
+    max-width: 860px; margin: 0 auto;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 24px; padding: 10px 14px;
     display: flex; flex-direction: column; gap: 8px;
@@ -206,7 +248,7 @@
     <div class="topbar-left">
       <button id="toggleSidebarBtn" class="icon-btn" type="button" title="Alternar menu">☰</button>
       <span class="logo-badge">Ω</span>
-      <span class="brand-title">LUX-Ω Colab</span>
+      <span class="brand-title">LUX-Ω Colab & CreativeField</span>
     </div>
     <div class="status-pills">
       <span id="apiPill" class="pill err">Colab: desconectado</span>
@@ -217,20 +259,31 @@
 
   <div class="workspace">
     <aside id="sidebar" class="sidebar">
-      <div class="sb-section-title">Modos</div>
+      <div class="sb-section-title">Estúdio & Ferramentas</div>
       <div class="nav-list">
-        <button class="nav-item active" type="button" data-view="chat">💬 Chat & Ferramentas</button>
-        <button class="nav-item" type="button" data-view="dub">🎬 Dublagem & Face Swap</button>
-        <button class="nav-item" type="button" data-view="voice">🎙️ Clonar Voz</button>
-        <button class="nav-item" type="button" data-view="swap">🎭 Trocar Rosto</button>
-        <button class="nav-item" type="button" data-view="video">🎥 Vídeo GPU</button>
+        <button class="nav-item active" type="button" data-view="chat">💬 Chat & RAG (LLM/Whisper/Crawl)</button>
+        <button class="nav-item" type="button" data-view="creativefield">🎨 CreativeField (App Colab)</button>
+        <button class="nav-item" type="button" data-view="comfy">🕸️ ComfyUI & Wan 2.2</button>
+        <button class="nav-item" type="button" data-view="dub">🎬 Dublagem + Face Swap + LipSync</button>
+        <button class="nav-item" type="button" data-view="voice">🎙️ Clonar Voz (XTTS / F5)</button>
+        <button class="nav-item" type="button" data-view="swap">🎭 Trocar Rosto (Foto / Vídeo)</button>
+        <button class="nav-item" type="button" data-view="video">🎥 Vídeo GPU (Wan 2.1 / LTX)</button>
+        <button class="nav-item" type="button" data-view="jobs">📋 Jobs & Status Colab</button>
       </div>
 
       <div class="sb-section-title">Conexão Colab</div>
       <div class="card-box">
         <label class="field-label">
-          URL do Túnel (trycloudflare)
+          URL Backend Colab (trycloudflare)
           <input id="apiUrlInput" type="url" placeholder="https://xxxx.trycloudflare.com">
+        </label>
+        <label class="field-label">
+          URL CreativeField (opcional)
+          <input id="cfUrlInput" type="url" placeholder="https://yyyy.trycloudflare.com">
+        </label>
+        <label class="field-label">
+          URL ComfyUI (opcional)
+          <input id="comfyUrlInput" type="url" placeholder="https://zzzz.trycloudflare.com">
         </label>
         <label class="field-label">
           Canal ntfy
@@ -245,18 +298,39 @@
 
       <div class="card-box">
         <div class="small-note">
-          Cache e RAG reaproveitados no Google Drive; mídias geradas ficam na sessão temporária do Colab para baixar na hora.
+          Drive: cache, <code>db/rag_memory.jsonl</code> e <code>jobs</code> reaproveitados.<br>
+          Mídias geradas ficam em <code>/content/lux_session_tmp/outputs</code> para baixar na hora.
         </div>
       </div>
     </aside>
 
     <main class="main-panel">
+      <!-- CHAT & FERRAMENTAS -->
       <section id="view-chat" class="view-pane active">
         <div class="stream-area">
           <div id="chatStream" class="stream-inner">
             <div class="hero-greeting">
-              <h1>Olá, como posso ajudar no seu Colab?</h1>
-              <p>A interface funciona mesmo offline para navegar e testar; para rodar modelos, cole a URL do Colab ou clique em Sincronizar.</p>
+              <h1>LUX-Ω — Central Colab</h1>
+              <p>Use os atalhos abaixo para preencher ferramentas ou abrir CreativeField, ComfyUI, Dublagem, Voz, Face Swap e Vídeo GPU.</p>
+            </div>
+
+            <div class="shortcut-grid">
+              <button class="shortcut-tile" type="button" data-shortcut="creativefield">
+                <strong>🎨 Abrir CreativeField</strong>
+                <span>Atalho para o app em /content/Creativefield</span>
+              </button>
+              <button class="shortcut-tile" type="button" data-shortcut="dub">
+                <strong>🎬 Dublagem Completa</strong>
+                <span>Face Swap + GFPGAN + XTTS + Wav2Lip</span>
+              </button>
+              <button class="shortcut-tile" type="button" data-shortcut="whisper">
+                <strong>🎧 Whisper + RAG</strong>
+                <span>Transcreve mídia e salva no Drive</span>
+              </button>
+              <button class="shortcut-tile" type="button" data-shortcut="crawl4ai">
+                <strong>🌐 Crawl4AI + RAG</strong>
+                <span>Extrai página web e salva no Drive</span>
+              </button>
             </div>
           </div>
         </div>
@@ -265,7 +339,7 @@
             <textarea id="chatInput" class="composer-textarea" placeholder="Digite um prompt, texto para TTS, código Python ou URL..."></textarea>
             <div class="composer-footer">
               <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; flex:1;">
-                <select id="chatTool" style="max-width:210px;">
+                <select id="chatTool" style="max-width:215px;">
                   <option value="llm_gpu">LLM GPU (Qwen2.5-7B)</option>
                   <option value="whisper">Whisper + RAG (URL)</option>
                   <option value="crawl4ai">Crawl4AI + RAG (URL)</option>
@@ -280,6 +354,49 @@
         </div>
       </section>
 
+      <!-- CREATIVEFIELD -->
+      <section id="view-creativefield" class="view-pane">
+        <div class="embed-bar">
+          <div>
+            <strong>CreativeField</strong>
+            <span class="small-note"> — Clonado em <code>/content/Creativefield</code> no Colab</span>
+          </div>
+          <div class="btn-row">
+            <button id="cfReloadBtn" type="button" class="btn btn-secondary">Carregar no painel</button>
+            <a id="cfExternalLink" href="#" target="_blank" rel="noopener" class="btn btn-primary">Abrir em nova aba</a>
+          </div>
+        </div>
+        <div class="stream-area" style="display:flex; flex-direction:column; gap:12px;">
+          <div id="cfNotice" class="msg-ai">
+            <div class="msg-meta">Como conectar o CreativeField do Colab</div>
+            Informe a URL pública do túnel (<code>https://...trycloudflare.com</code>) do servidor CreativeField na barra lateral e clique em <strong>Conectar</strong> ou <strong>Carregar no painel</strong>. Se o túnel não estiver ativo, o painel mostrará o diagnóstico sem travar.
+          </div>
+          <iframe id="cfFrame" class="embed-frame" title="CreativeField"></iframe>
+        </div>
+      </section>
+
+      <!-- COMFYUI -->
+      <section id="view-comfy" class="view-pane">
+        <div class="embed-bar">
+          <div>
+            <strong>ComfyUI + Wan 2.2</strong>
+            <span class="small-note"> — Cache em <code>Colab_AI_Workspace/cache/comfyui</code></span>
+          </div>
+          <div class="btn-row">
+            <button id="comfyReloadBtn" type="button" class="btn btn-secondary">Carregar ComfyUI</button>
+            <a id="comfyExternalLink" href="#" target="_blank" rel="noopener" class="btn btn-primary">Abrir em nova aba</a>
+          </div>
+        </div>
+        <div class="stream-area" style="display:flex; flex-direction:column; gap:12px;">
+          <div id="comfyNotice" class="msg-ai">
+            <div class="msg-meta">Status do ComfyUI</div>
+            O badge superior lê <code>comfy_8188</code> no endpoint <code>/status</code> do backend Colab. Cole a URL do túnel do ComfyUI na barra lateral para abrir a interface aqui ou em nova aba.
+          </div>
+          <iframe id="comfyFrame" class="embed-frame" title="ComfyUI"></iframe>
+        </div>
+      </section>
+
+      <!-- DUBLAGEM -->
       <section id="view-dub" class="view-pane">
         <div class="stream-area">
           <div class="stream-inner">
@@ -317,6 +434,7 @@
         </div>
       </section>
 
+      <!-- CLONAR VOZ -->
       <section id="view-voice" class="view-pane">
         <div class="stream-area">
           <div class="stream-inner">
@@ -356,6 +474,7 @@
         </div>
       </section>
 
+      <!-- TROCAR ROSTO -->
       <section id="view-swap" class="view-pane">
         <div class="stream-area">
           <div class="stream-inner">
@@ -380,6 +499,7 @@
         </div>
       </section>
 
+      <!-- VÍDEO GPU -->
       <section id="view-video" class="view-pane">
         <div class="stream-area">
           <div class="stream-inner">
@@ -403,32 +523,44 @@
           </div>
         </div>
       </section>
+
+      <!-- JOBS & STATUS -->
+      <section id="view-jobs" class="view-pane">
+        <div class="stream-area">
+          <div class="stream-inner">
+            <div class="studio-card">
+              <h2>Status do Colab & Consultar Job</h2>
+              <p class="desc">Verifica <code>/status</code>, <code>/health</code> e consulta o estado de um <code>job_id</code> salvo.</p>
+              <div class="grid-2">
+                <label class="field-label">ID do Job
+                  <input id="jobIdInput" type="text" placeholder="Ex: 8f3a1c2b">
+                </label>
+              </div>
+              <div class="btn-row">
+                <button id="checkStatusBtn" type="button" class="btn btn-primary">Atualizar Status Colab</button>
+                <button id="checkJobBtn" type="button" class="btn btn-secondary">Consultar Job</button>
+              </div>
+            </div>
+            <div id="jobsOut" class="msg-ai"><div class="msg-meta">Diagnóstico</div>Pronto para consultar.</div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
 <script>
 (function () {
-  const STORAGE_KEY = "lux_omega_colab_url";
-  let memoryUrl = "";
-  function readSavedUrl() {
-    try { return localStorage.getItem(STORAGE_KEY) || ""; } catch (_) { return memoryUrl; }
+  const KEY_API = "lux_omega_colab_url";
+  const KEY_CF = "lux_omega_cf_url";
+  const KEY_COMFY = "lux_omega_comfy_url";
+  const mem = {};
+
+  function readPref(key) {
+    try { return localStorage.getItem(key) || ""; } catch (_) { return mem[key] || ""; }
   }
-  function writeSavedUrl(val) {
-    memoryUrl = val;
-    try { localStorage.setItem(STORAGE_KEY, val); } catch (_) {}
-  }
-
-  let apiUrl = readSavedUrl().replace(/\/+$/, "");
-
-  const apiUrlInput = document.getElementById("apiUrlInput");
-  const apiPill = document.getElementById("apiPill");
-  const vramPill = document.getElementById("vramPill");
-  const comfyPill = document.getElementById("comfyPill");
-  const connLog = document.getElementById("connLog");
-  if (apiUrl && apiUrlInput) apiUrlInput.value = apiUrl;
-
-  function logConn(msg) {
-    if (connLog) connLog.textContent = msg;
+  function writePref(key, val) {
+    mem[key] = val;
+    try { localStorage.setItem(key, val); } catch (_) {}
   }
 
   function normalizeUrl(raw) {
@@ -437,10 +569,78 @@
     return u;
   }
 
-  function saveApiUrl(u) {
-    apiUrl = normalizeUrl(u);
-    if (apiUrlInput) apiUrlInput.value = apiUrl;
-    if (apiUrl) writeSavedUrl(apiUrl);
+  let apiUrl = normalizeUrl(readPref(KEY_API));
+  let cfUrl = normalizeUrl(readPref(KEY_CF));
+  let comfyUrl = normalizeUrl(readPref(KEY_COMFY));
+
+  const apiUrlInput = document.getElementById("apiUrlInput");
+  const cfUrlInput = document.getElementById("cfUrlInput");
+  const comfyUrlInput = document.getElementById("comfyUrlInput");
+  const apiPill = document.getElementById("apiPill");
+  const vramPill = document.getElementById("vramPill");
+  const comfyPill = document.getElementById("comfyPill");
+  const connLog = document.getElementById("connLog");
+
+  if (apiUrl) apiUrlInput.value = apiUrl;
+  if (cfUrl) cfUrlInput.value = cfUrl;
+  if (comfyUrl) comfyUrlInput.value = comfyUrl;
+
+  function logConn(msg) {
+    if (connLog) connLog.textContent = msg;
+  }
+
+  function saveEndpoints() {
+    apiUrl = normalizeUrl(apiUrlInput.value);
+    cfUrl = normalizeUrl(cfUrlInput.value);
+    comfyUrl = normalizeUrl(comfyUrlInput.value);
+    apiUrlInput.value = apiUrl;
+    cfUrlInput.value = cfUrl;
+    comfyUrlInput.value = comfyUrl;
+    writePref(KEY_API, apiUrl);
+    writePref(KEY_CF, cfUrl);
+    writePref(KEY_COMFY, comfyUrl);
+    updateEmbedLinks();
+  }
+
+  function updateEmbedLinks() {
+    const cfLink = document.getElementById("cfExternalLink");
+    const comfyLink = document.getElementById("comfyExternalLink");
+    cfLink.href = cfUrl || "#";
+    comfyLink.href = comfyUrl || "#";
+  }
+  updateEmbedLinks();
+
+  function switchView(viewName) {
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.view === viewName));
+    document.querySelectorAll(".view-pane").forEach(v => v.classList.toggle("active", v.id === "view-" + viewName));
+    if (window.innerWidth <= 780) {
+      document.getElementById("sidebar").classList.add("collapsed");
+    }
+    logConn("Modo: " + viewName);
+  }
+
+  function loadCreativeField() {
+    const frame = document.getElementById("cfFrame");
+    const notice = document.getElementById("cfNotice");
+    if (!cfUrl) {
+      notice.innerHTML = '<div class="msg-meta">URL do CreativeField não informada</div>Cole a URL do túnel do CreativeField na barra lateral e clique em <strong>Conectar</strong> ou <strong>Carregar no painel</strong>.';
+      frame.removeAttribute("src");
+      return;
+    }
+    notice.innerHTML = `<div class="msg-meta">Carregando CreativeField</div>Conectando em <code>${cfUrl}</code>...`;
+    frame.src = cfUrl;
+  }
+
+  function loadComfyFrame() {
+    const frame = document.getElementById("comfyFrame");
+    const notice = document.getElementById("comfyNotice");
+    if (!comfyUrl) {
+      notice.innerHTML = '<div class="msg-meta">URL do ComfyUI não informada</div>Cole a URL do túnel do ComfyUI na barra lateral (ou use o botão <strong>Abrir em nova aba</strong> quando configurar).';
+      frame.removeAttribute("src");
+      return;
+    }
+    notice.innerHTML = `<div class="msg-meta">Carregando ComfyUI</div>Conectando em <code>${comfyUrl}</code>...`;
+    frame.src = comfyUrl;
   }
 
   function resolveUrl(u) {
@@ -509,6 +709,7 @@
   }
 
   async function pollJob(jobId, onTick, onDone) {
+    document.getElementById("jobIdInput").value = jobId;
     for (let i = 0; i < 600; i++) {
       await new Promise(r => setTimeout(r, 2000));
       const res = await fetch(`${apiUrl}/jobs/${encodeURIComponent(jobId)}`);
@@ -527,8 +728,8 @@
     if (!apiUrl) {
       apiPill.textContent = "Colab: desconectado";
       apiPill.className = "pill err";
-      logConn("Sem URL configurada.");
-      return;
+      logConn("Sem URL de backend configurada.");
+      return null;
     }
     logConn(`Testando ${apiUrl}/status ...`);
     try {
@@ -541,13 +742,14 @@
         vramPill.textContent = `VRAM: ${st.free_vram_gb ?? "--"} GB`;
         comfyPill.textContent = `Comfy: ${st.comfy_8188 ? "ativo" : "inativo"}`;
         logConn("Conectado ao backend Colab.");
-      } else {
-        throw new Error("Resposta JSON sem ok=true");
+        return st;
       }
+      throw new Error("Resposta JSON sem ok=true");
     } catch (err) {
       apiPill.textContent = "Colab: offline";
       apiPill.className = "pill err";
       logConn(`Falha ao conectar: ${err.message || "erro de rede/CORS"}`);
+      return null;
     }
   }
 
@@ -558,21 +760,33 @@
   });
 
   document.querySelectorAll(".nav-item").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".view-pane").forEach(v => v.classList.remove("active"));
-      btn.classList.add("active");
-      const target = document.getElementById("view-" + btn.dataset.view);
-      if (target) target.classList.add("active");
-      if (window.innerWidth <= 780) {
-        document.getElementById("sidebar").classList.add("collapsed");
+    btn.addEventListener("click", () => switchView(btn.dataset.view));
+  });
+
+  document.querySelectorAll(".shortcut-tile").forEach(tile => {
+    tile.addEventListener("click", () => {
+      const sc = tile.dataset.shortcut;
+      if (sc === "creativefield") {
+        switchView("creativefield");
+        loadCreativeField();
+      } else if (sc === "dub") {
+        switchView("dub");
+      } else if (sc === "whisper") {
+        document.getElementById("chatTool").value = "whisper";
+        document.getElementById("chatUrl").focus();
+        logConn("Ferramenta selecionada: Whisper + RAG.");
+      } else if (sc === "crawl4ai") {
+        document.getElementById("chatTool").value = "crawl4ai";
+        document.getElementById("chatUrl").focus();
+        logConn("Ferramenta selecionada: Crawl4AI + RAG.");
       }
-      logConn(`Modo: ${btn.textContent.trim()}`);
     });
   });
 
   document.getElementById("connectBtn").addEventListener("click", async () => {
-    saveApiUrl(apiUrlInput.value);
+    saveEndpoints();
+    if (cfUrl) loadCreativeField();
+    if (comfyUrl) loadComfyFrame();
     await refreshStatus();
   });
 
@@ -590,7 +804,10 @@
           const outer = JSON.parse(lines[i]);
           const inner = typeof outer.message === "string" ? JSON.parse(outer.message) : outer.message;
           if (inner && inner.api_url) {
-            saveApiUrl(inner.api_url);
+            apiUrlInput.value = inner.api_url;
+            if (inner.creativefield_url) cfUrlInput.value = inner.creativefield_url;
+            if (inner.comfy_url) comfyUrlInput.value = inner.comfy_url;
+            saveEndpoints();
             logConn(`URL encontrada: ${inner.api_url}`);
             await refreshStatus();
             return;
@@ -601,6 +818,16 @@
     } catch (e) {
       logConn(`Erro ntfy: ${e.message}`);
     }
+  });
+
+  document.getElementById("cfReloadBtn").addEventListener("click", () => {
+    saveEndpoints();
+    loadCreativeField();
+  });
+
+  document.getElementById("comfyReloadBtn").addEventListener("click", () => {
+    saveEndpoints();
+    loadComfyFrame();
   });
 
   function ensureApi(el) {
@@ -769,6 +996,36 @@
       }
     } catch (err) {
       renderCardResult(out, "Erro Vídeo GPU", err.message);
+    }
+  });
+
+  document.getElementById("checkStatusBtn").addEventListener("click", async () => {
+    saveEndpoints();
+    const out = document.getElementById("jobsOut");
+    const st = await refreshStatus();
+    if (!st) {
+      renderCardResult(out, "Status Colab", "Backend offline ou URL não configurada.");
+      return;
+    }
+    try {
+      const hRes = await fetch(`${apiUrl}/health`, { mode: "cors" });
+      const hData = await hRes.json();
+      renderCardResult(out, "Status Colab", { status: st, health: hData });
+    } catch (e) {
+      renderCardResult(out, "Status Colab", { status: st, health_error: e.message });
+    }
+  });
+
+  document.getElementById("checkJobBtn").addEventListener("click", async () => {
+    const out = document.getElementById("jobsOut");
+    if (!ensureApi(out)) return;
+    const jid = document.getElementById("jobIdInput").value.trim();
+    if (!jid) { renderCardResult(out, "Atenção", "Informe um job_id."); return; }
+    try {
+      const res = await fetch(`${apiUrl}/jobs/${encodeURIComponent(jid)}`, { mode: "cors" });
+      renderCardResult(out, `Job ${jid}`, await res.json());
+    } catch (e) {
+      renderCardResult(out, `Erro Job ${jid}`, e.message);
     }
   });
 
