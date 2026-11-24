@@ -3,18 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LUX-Omega</title>
+  <title>LUX-Ω v12.0 — A100 Ultimate GGUF Studio</title>
   <style>
     :root {
-      --bg: #131314;
-      --surface: #1e1f20;
-      --surface-2: #282a2c;
-      --border: #333537;
-      --text: #e3e3e3;
+      --bg: #0f1012;
+      --surface: #181a1f;
+      --surface-2: #22252c;
+      --border: #2e323b;
+      --text: #e8eaed;
       --muted: #9aa0a6;
-      --primary: #a8c7fa;
-      --primary-ink: #062e6f;
-      --user-bubble: #2b2c2f;
+      --accent: #8ab4f8;
+      --accent-ink: #08214a;
       --ok: #81c995;
       --warn: #fdd663;
       --err: #f28b82;
@@ -25,423 +24,498 @@
       width: 100%;
       background: var(--bg);
       color: var(--text);
-      font-family: "Google Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .shell {
+    .layout { display: flex; height: 100vh; width: 100%; overflow: hidden; }
+    .sidebar {
+      width: 276px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      max-width: 100%;
-      overflow: hidden;
+      padding: 14px;
+      gap: 8px;
+      flex-shrink: 0;
     }
+    .sidebar.collapsed { width: 0; padding: 0; border-right: none; overflow: hidden; }
+    .brand { font-size: 0.92rem; font-weight: 700; color: var(--accent); padding: 4px 6px; }
+    .subbrand { font-size: 0.72rem; color: var(--muted); padding: 0 6px 6px; border-bottom: 1px solid var(--border); }
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .nav-btn:hover { background: var(--surface-2); }
+    .nav-btn.active { background: var(--surface-2); border-color: #3f4552; font-weight: 600; }
+    .group { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--border); }
+    .group-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 0 6px; }
+    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; height: 100vh; }
     .topbar {
       height: 58px;
-      padding: 0 20px;
+      padding: 0 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
       gap: 10px;
-      min-width: 0;
-    }
-    .brand-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--warn);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
       flex-shrink: 0;
     }
-    .brand-dot.ok { background: var(--ok); }
-    .brand-dot.err { background: var(--err); }
-    .brand-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-    .status-label {
-      font-size: 0.8rem;
+    .top-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
       color: var(--muted);
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    button {
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); }
+    .dot.ok { background: var(--ok); }
+    .dot.err { background: var(--err); }
+    .top-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    button.btn {
       appearance: none;
-      border: 1px solid var(--border);
       background: var(--surface);
       color: var(--text);
+      border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 0.84rem;
+      padding: 7px 13px;
+      font-size: 0.81rem;
       font-weight: 500;
       cursor: pointer;
     }
-    button:hover { background: var(--surface-2); border-color: #4a4d50; }
-    button.primary {
-      background: var(--primary);
-      color: var(--primary-ink);
-      border-color: var(--primary);
-      font-weight: 600;
-    }
-    .drawer {
-      display: none;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 20px;
-      flex-shrink: 0;
-    }
-    .drawer.open { display: block; }
-    .drawer-inner {
-      max-width: 820px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-    }
-    .field label {
-      display: block;
-      font-size: 0.76rem;
-      color: var(--muted);
-      margin-bottom: 5px;
-    }
-    .field input {
+    button.btn:hover { background: var(--surface-2); border-color: #464c5a; }
+    button.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+    .panel { display: none; background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 18px; flex-shrink: 0; }
+    .panel.open { display: block; }
+    .panel-grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .field label { display: block; font-size: 0.73rem; color: var(--muted); margin-bottom: 4px; }
+    .field input, .field select {
       width: 100%;
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 0.9rem;
+      border-radius: 9px;
+      padding: 8px 11px;
+      font-size: 0.86rem;
       outline: none;
     }
-    .field input:focus { border-color: var(--primary); }
-    .drawer-footer {
-      max-width: 820px;
-      margin: 12px auto 0;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-    .stream {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px 16px 120px;
-    }
-    .stream-inner {
-      max-width: 820px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .row {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .row.user { align-items: flex-end; }
-    .row.assistant { align-items: flex-start; }
-    .role-tag {
-      font-size: 0.74rem;
-      color: var(--muted);
-      padding: 0 4px;
-    }
-    .bubble-user {
-      background: var(--user-bubble);
-      color: var(--text);
-      border-radius: 20px 20px 6px 20px;
-      padding: 12px 16px;
-      max-width: 78%;
+    .panel-foot { max-width: 900px; margin: 10px auto 0; display: flex; justify-content: flex-end; gap: 8px; }
+    .view-area { flex: 1; overflow-y: auto; padding: 22px 18px 110px; }
+    .view-inner { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 15px 16px; }
+    .msg-u {
+      align-self: flex-end;
+      background: var(--surface-2);
+      border: 1px solid #3d4350;
+      border-radius: 18px 18px 6px 18px;
+      padding: 11px 15px;
+      max-width: 80%;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.94rem;
       line-height: 1.5;
-      font-size: 0.95rem;
-      white-space: pre-wrap;
-      word-break: break-word;
     }
-    .bubble-assistant {
+    .msg-a {
+      align-self: flex-start;
       width: 100%;
-      color: var(--text);
-      line-height: 1.62;
-      font-size: 0.98rem;
+      padding: 4px 2px;
       white-space: pre-wrap;
       word-break: break-word;
-      padding: 2px 4px;
+      font-size: 0.95rem;
+      line-height: 1.62;
     }
-    .composer-wrap {
-      padding: 12px 16px 18px;
-      background: linear-gradient(to top, var(--bg) 75%, rgba(19,19,20,0));
-      flex-shrink: 0;
-    }
-    .composer-box {
-      max-width: 820px;
+    .studio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 10px; }
+    .composer { padding: 10px 18px 16px; background: var(--bg); border-top: 1px solid var(--border); flex-shrink: 0; }
+    .composer-inner {
+      max-width: 900px;
       margin: 0 auto;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 10px 12px 10px 18px;
       display: flex;
       align-items: flex-end;
       gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 8px 12px 8px 16px;
     }
-    .composer-box:focus-within { border-color: #5f6368; }
     textarea {
       flex: 1;
       background: transparent;
       border: none;
       color: var(--text);
       font-family: inherit;
-      font-size: 0.96rem;
+      font-size: 0.94rem;
       line-height: 1.45;
-      max-height: 180px;
+      max-height: 160px;
       min-height: 24px;
       resize: none;
       outline: none;
-      padding: 4px 0;
     }
-    .send-btn {
-      border-radius: 50%;
-      width: 38px;
-      height: 38px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      flex-shrink: 0;
-    }
-    .hint {
-      max-width: 820px;
-      margin: 8px auto 0;
-      text-align: center;
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <div class="brand">
-        <span id="dot" class="brand-dot"></span>
-        <span class="brand-title">LUX-Omega</span>
-        <span id="status" class="status-label">Desconectado</span>
+  <div class="layout">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand">LUX-Ω v12.0</div>
+      <div class="subbrand">A100 ULTIMATE GGUF STUDIO</div>
+      <button type="button" class="nav-btn active" data-tab="chat">💬 Chat & /executar</button>
+      <button type="button" class="nav-btn" data-tab="studio">🎬 Studio & GGUF</button>
+      <button type="button" class="nav-btn" data-tab="status">📊 Status & Túneis</button>
+      <div class="group">
+        <div class="group-label">Ferramentas & Túneis</div>
+        <button type="button" class="nav-btn" id="open-creativefield">🎞️ CreativeField</button>
+        <button type="button" class="nav-btn" id="open-comfy">⚙️ ComfyUI (--highvram)</button>
+        <button type="button" class="nav-btn" id="open-docs">📄 API /docs</button>
       </div>
-      <div class="top-actions">
-        <button type="button" id="btn-sync">Sincronizar</button>
-        <button type="button" id="btn-health">Testar</button>
-        <button type="button" id="btn-config">Configurar</button>
-      </div>
-    </header>
+    </aside>
 
-    <section id="drawer" class="drawer">
-      <div class="drawer-inner">
-        <div class="field">
-          <label for="inp-ntfy">Canal ntfy.sh</label>
-          <input type="text" id="inp-ntfy" value="lux-omega-kauan-v55" />
+    <div class="main">
+      <header class="topbar">
+        <div class="top-left">
+          <button type="button" class="btn" id="btn-menu">☰</button>
+          <span class="pill"><span id="dot-api" class="dot"></span><span id="txt-api">API: pendente</span></span>
+          <span class="pill"><span id="dot-tor" class="dot"></span><span id="txt-tor">Tor: -</span></span>
+          <span class="pill"><span id="dot-i2p" class="dot"></span><span id="txt-i2p">I2Pd: -</span></span>
         </div>
-        <div class="field">
-          <label for="inp-url">URL do Colab / Túnel</label>
-          <input type="url" id="inp-url" placeholder="https://xxxx.trycloudflare.com" />
+        <div class="top-actions">
+          <button type="button" class="btn" id="btn-sync">📡 Sincronizar</button>
+          <button type="button" class="btn" id="btn-status">Status</button>
+          <button type="button" class="btn primary" id="btn-cfg">⚙️ Config</button>
         </div>
-        <div class="field">
-          <label for="inp-route">Rota POST</label>
-          <input type="text" id="inp-route" value="/executar" />
-        </div>
-      </div>
-      <div class="drawer-footer">
-        <button type="button" id="btn-cancel">Fechar</button>
-        <button type="button" class="primary" id="btn-save">Salvar</button>
-      </div>
-    </section>
+      </header>
 
-    <main id="stream" class="stream">
-      <div id="stream-inner" class="stream-inner">
-        <div class="row assistant">
-          <span class="role-tag">LUX-Omega</span>
-          <div class="bubble-assistant">Pronto. Clique em Sincronizar para buscar o túnel no canal ntfy.sh ou em Configurar para colar a URL do Colab.</div>
+      <section id="cfg-panel" class="panel">
+        <div class="panel-grid">
+          <div class="field">
+            <label for="cfg-ntfy">Canal ntfy.sh</label>
+            <input type="text" id="cfg-ntfy" value="lux-omega-kauan-v55" />
+          </div>
+          <div class="field">
+            <label for="cfg-api">URL da API FastAPI</label>
+            <input type="url" id="cfg-api" placeholder="https://xxxx.trycloudflare.com" />
+          </div>
+          <div class="field">
+            <label for="cfg-comfy">URL do ComfyUI</label>
+            <input type="url" id="cfg-comfy" placeholder="https://xxxx.trycloudflare.com" />
+          </div>
+          <div class="field">
+            <label for="cfg-creative">URL do CreativeField</label>
+            <input type="url" id="cfg-creative" placeholder="https://xxxx.trycloudflare.com" />
+          </div>
+          <div class="field">
+            <label for="cfg-route">Rota POST</label>
+            <input type="text" id="cfg-route" value="/executar" />
+          </div>
+          <div class="field">
+            <label for="cfg-mode">Modo / Perfil</label>
+            <select id="cfg-mode">
+              <option value="chat">chat (A100 / Conselho)</option>
+              <option value="video_comfy">video_comfy (Wan 2.2 / GGUF)</option>
+              <option value="iceberg_search">iceberg_search</option>
+              <option value="osint_inspect">osint_inspect</option>
+            </select>
+          </div>
+        </div>
+        <div class="panel-foot">
+          <button type="button" class="btn" id="btn-close-cfg">Fechar</button>
+          <button type="button" class="btn primary" id="btn-save-cfg">Salvar Conexão</button>
+        </div>
+      </section>
+
+      <main id="view-area" class="view-area">
+        <div id="tab-chat" class="view-inner">
+          <div class="msg-a">LUX-Ω v12.0 (A100 Ultimate GGUF Studio) pronto. Clique em <b>📡 Sincronizar</b> para buscar os túneis no canal <code>lux-omega-kauan-v55</code> ou abra <b>⚙️ Config</b>.</div>
+        </div>
+
+        <div id="tab-studio" class="view-inner hidden">
+          <div class="card">
+            <div style="font-weight:700;margin-bottom:6px;">Estúdio de Vídeo & GGUF (Wan 2.2 / ComfyUI / CreativeField)</div>
+            <p style="font-size:0.86rem;color:var(--muted);">Configure os parâmetros de geração e envie direto para o backend ou abra os painéis do ComfyUI e CreativeField.</p>
+            <div class="studio-grid">
+              <div class="field">
+                <label for="st-model">Modelo / Preset</label>
+                <select id="st-model">
+                  <option value="wan22_a14b_gguf">Wan 2.2 A14B GGUF + UMT5-XXL</option>
+                  <option value="wan22_ti2v_5b">Wan 2.2 TI2V-5B (720p / 24fps)</option>
+                  <option value="ltx_25">LTX-2.5 / Video GPU</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="st-prompt">Prompt de Cena</label>
+                <input type="text" id="st-prompt" placeholder="Ex.: tomada aérea cinematográfica em 720p, 24fps..." />
+              </div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" class="btn primary" id="btn-run-studio">Executar no Backend</button>
+              <button type="button" class="btn" id="btn-studio-cf">Abrir CreativeField</button>
+              <button type="button" class="btn" id="btn-studio-cui">Abrir ComfyUI</button>
+            </div>
+            <pre id="studio-out" style="margin-top:12px;white-space:pre-wrap;font-size:0.83rem;color:var(--muted);">Aguardando execução.</pre>
+          </div>
+        </div>
+
+        <div id="tab-status" class="view-inner hidden">
+          <div class="card">
+            <div style="font-weight:700;margin-bottom:8px;">Status do Backend & Túneis</div>
+            <pre id="status-dump" style="white-space:pre-wrap;font-size:0.84rem;color:var(--muted);">Clique em "Status" no topo para consultar /status.</pre>
+          </div>
+        </div>
+      </main>
+
+      <div id="composer" class="composer">
+        <div class="composer-inner">
+          <textarea id="inp-msg" rows="1" placeholder="Envie um prompt ou comando para o LUX-Ω v12.0..."></textarea>
+          <button type="button" class="btn primary" id="btn-send">Enviar</button>
         </div>
       </div>
-    </main>
-
-    <div class="composer-wrap">
-      <div class="composer-box">
-        <textarea id="prompt" rows="1" placeholder="Pergunte qualquer coisa..."></textarea>
-        <button type="button" class="primary send-btn" id="btn-send" title="Enviar">➤</button>
-      </div>
-      <div class="hint">Enter envia • Shift+Enter quebra linha</div>
     </div>
   </div>
 
   <script>
     (function () {
-      const dot = document.getElementById('dot');
-      const statusEl = document.getElementById('status');
-      const drawer = document.getElementById('drawer');
-      const inpNtfy = document.getElementById('inp-ntfy');
-      const inpUrl = document.getElementById('inp-url');
-      const inpRoute = document.getElementById('inp-route');
-      const stream = document.getElementById('stream');
-      const streamInner = document.getElementById('stream-inner');
-      const promptEl = document.getElementById('prompt');
+      const $ = (id) => document.getElementById(id);
+      const sidebar = $('sidebar');
+      const cfgPanel = $('cfg-panel');
+      const tabChat = $('tab-chat');
+      const tabStudio = $('tab-studio');
+      const tabStatus = $('tab-status');
+      const composer = $('composer');
+      const inpMsg = $('inp-msg');
 
-      inpNtfy.value = localStorage.getItem('lux_ntfy') || 'lux-omega-kauan-v55';
-      inpUrl.value = localStorage.getItem('lux_url') || '';
-      inpRoute.value = localStorage.getItem('lux_route') || '/executar';
+      $('cfg-ntfy').value = localStorage.getItem('lux_v12_ntfy') || 'lux-omega-kauan-v55';
+      $('cfg-api').value = localStorage.getItem('lux_v12_api') || '';
+      $('cfg-comfy').value = localStorage.getItem('lux_v12_comfy') || '';
+      $('cfg-creative').value = localStorage.getItem('lux_v12_creative') || '';
+      $('cfg-route').value = localStorage.getItem('lux_v12_route') || '/executar';
+      $('cfg-mode').value = localStorage.getItem('lux_v12_mode') || 'chat';
 
-      function setStatus(text, state) {
-        statusEl.textContent = text;
-        dot.className = 'brand-dot' + (state ? ' ' + state : '');
+      function setPill(dotId, txtId, label, state) {
+        $(dotId).className = 'dot' + (state ? ' ' + state : '');
+        $(txtId).textContent = label;
       }
 
-      function syncStatusFromStorage() {
-        const u = (localStorage.getItem('lux_url') || '').trim();
-        if (u) setStatus(u, 'ok');
-        else setStatus('Sem URL configurada', '');
+      function addChat(role, text) {
+        const div = document.createElement('div');
+        div.className = role === 'user' ? 'msg-u' : 'msg-a';
+        div.textContent = text;
+        tabChat.appendChild(div);
+        $('view-area').scrollTop = $('view-area').scrollHeight;
+        return div;
       }
 
-      function appendTurn(role, text) {
-        const row = document.createElement('div');
-        row.className = 'row ' + (role === 'user' ? 'user' : 'assistant');
-
-        const tag = document.createElement('span');
-        tag.className = 'role-tag';
-        tag.textContent = role === 'user' ? 'Você' : 'LUX-Omega';
-
-        const bubble = document.createElement('div');
-        bubble.className = role === 'user' ? 'bubble-user' : 'bubble-assistant';
-        bubble.textContent = text;
-
-        row.appendChild(tag);
-        row.appendChild(bubble);
-        streamInner.appendChild(row);
-        stream.scrollTop = stream.scrollHeight;
-        return bubble;
+      function switchTab(name) {
+        document.querySelectorAll('.nav-btn[data-tab]').forEach((b) => {
+          b.classList.toggle('active', b.dataset.tab === name);
+        });
+        tabChat.classList.toggle('hidden', name !== 'chat');
+        tabStudio.classList.toggle('hidden', name !== 'studio');
+        tabStatus.classList.toggle('hidden', name !== 'status');
+        composer.classList.toggle('hidden', name !== 'chat');
       }
 
-      function autoGrow() {
-        promptEl.style.height = 'auto';
-        promptEl.style.height = Math.min(promptEl.scrollHeight, 180) + 'px';
-      }
-
-      promptEl.addEventListener('input', autoGrow);
-
-      document.getElementById('btn-config').addEventListener('click', function () {
-        drawer.classList.toggle('open');
+      document.querySelectorAll('.nav-btn[data-tab]').forEach((b) => {
+        b.addEventListener('click', () => switchTab(b.dataset.tab));
       });
 
-      document.getElementById('btn-cancel').addEventListener('click', function () {
-        drawer.classList.remove('open');
+      $('btn-menu').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+      $('btn-cfg').addEventListener('click', () => cfgPanel.classList.toggle('open'));
+      $('btn-close-cfg').addEventListener('click', () => cfgPanel.classList.remove('open'));
+
+      $('btn-save-cfg').addEventListener('click', () => {
+        const api = $('cfg-api').value.trim().replace(/\/+$/, '');
+        const comfy = $('cfg-comfy').value.trim().replace(/\/+$/, '');
+        const creative = $('cfg-creative').value.trim().replace(/\/+$/, '');
+        const routeRaw = ($('cfg-route').value.trim() || '/executar');
+        const route = routeRaw.startsWith('/') ? routeRaw : '/' + routeRaw;
+        const ntfy = ($('cfg-ntfy').value.trim() || 'lux-omega-kauan-v55');
+        const mode = $('cfg-mode').value;
+
+        localStorage.setItem('lux_v12_ntfy', ntfy);
+        localStorage.setItem('lux_v12_api', api);
+        localStorage.setItem('lux_v12_comfy', comfy);
+        localStorage.setItem('lux_v12_creative', creative);
+        localStorage.setItem('lux_v12_route', route);
+        localStorage.setItem('lux_v12_mode', mode);
+        cfgPanel.classList.remove('open');
+
+        if (api) setPill('dot-api', 'txt-api', 'API: configurada', 'ok');
+        addChat('assistant', 'Configuração LUX-Ω v12.0 salva.');
       });
 
-      document.getElementById('btn-save').addEventListener('click', function () {
-        const cleanUrl = inpUrl.value.trim().replace(/\/+$/, '');
-        const rawRoute = (inpRoute.value.trim() || '/executar');
-        const cleanRoute = rawRoute.startsWith('/') ? rawRoute : '/' + rawRoute;
-        localStorage.setItem('lux_ntfy', inpNtfy.value.trim() || 'lux-omega-kauan-v55');
-        localStorage.setItem('lux_url', cleanUrl);
-        localStorage.setItem('lux_route', cleanRoute);
-        inpUrl.value = cleanUrl;
-        inpRoute.value = cleanRoute;
-        drawer.classList.remove('open');
-        syncStatusFromStorage();
-        appendTurn('assistant', 'Configuração salva.');
-      });
-
-      document.getElementById('btn-sync').addEventListener('click', async function () {
-        const channel = (inpNtfy.value.trim() || 'lux-omega-kauan-v55');
-        setStatus('Sincronizando...', '');
+      $('btn-sync').addEventListener('click', async () => {
+        const ch = ($('cfg-ntfy').value.trim() || 'lux-omega-kauan-v55');
+        setPill('dot-api', 'txt-api', 'API: sincronizando...', '');
         try {
-          const res = await fetch('https://ntfy.sh/' + encodeURIComponent(channel) + '/json?poll=1&since=24h');
+          const res = await fetch('https://ntfy.sh/' + encodeURIComponent(ch) + '/json?poll=1&since=24h');
           const raw = await res.text();
-          let found = null;
+          let apiFound = null, comfyFound = null, creativeFound = null;
           for (const line of raw.split('
 ')) {
             if (!line.trim()) continue;
-            const matches = line.match(/https?:\/\/[a-zA-Z0-9.-]+\.(?:trycloudflare\.com|loca\.lt|ngrok-free\.app|ngrok\.io)|http:\/\/bore\.pub:\d+/g);
-            if (matches && matches.length) found = matches[matches.length - 1];
+            try {
+              const obj = JSON.parse(line);
+              const msg = obj.message || '';
+              if (obj.api_url) apiFound = obj.api_url;
+              if (obj.comfy_url) comfyFound = obj.comfy_url;
+              if (obj.creativefield_url) creativeFound = obj.creativefield_url;
+              const urls = msg.match(/https?:\/\/[a-zA-Z0-9.-]+\.(?:trycloudflare\.com|loca\.lt|ngrok-free\.app|ngrok\.io)|http:\/\/bore\.pub:\d+/g);
+              if (urls && urls.length) {
+                if (!apiFound) apiFound = urls[0];
+                if (urls.length > 1 && !comfyFound) comfyFound = urls[1];
+                if (urls.length > 2 && !creativeFound) creativeFound = urls[2];
+              }
+            } catch (_) {}
           }
-          if (found) {
-            found = found.replace(/\/+$/, '');
-            localStorage.setItem('lux_url', found);
-            inpUrl.value = found;
-            setStatus(found, 'ok');
-            appendTurn('assistant', 'Conectado a ' + found);
+          if (apiFound) {
+            apiFound = apiFound.replace(/\/+$/, '');
+            localStorage.setItem('lux_v12_api', apiFound);
+            $('cfg-api').value = apiFound;
+            if (comfyFound) {
+              comfyFound = comfyFound.replace(/\/+$/, '');
+              localStorage.setItem('lux_v12_comfy', comfyFound);
+              $('cfg-comfy').value = comfyFound;
+            }
+            if (creativeFound) {
+              creativeFound = creativeFound.replace(/\/+$/, '');
+              localStorage.setItem('lux_v12_creative', creativeFound);
+              $('cfg-creative').value = creativeFound;
+            }
+            setPill('dot-api', 'txt-api', 'API: online', 'ok');
+            addChat('assistant', 'Sincronizado com ' + apiFound);
           } else {
-            syncStatusFromStorage();
-            appendTurn('assistant', 'Nenhum link encontrado no canal ' + channel + '.');
+            setPill('dot-api', 'txt-api', 'API: sem URL', '');
+            addChat('assistant', 'Nenhuma URL encontrada no canal ' + ch + '.');
           }
         } catch (err) {
-          setStatus('Erro ao sincronizar', 'err');
-          appendTurn('assistant', 'Falha ao consultar ntfy.sh: ' + err.message);
+          setPill('dot-api', 'txt-api', 'API: erro', 'err');
+          addChat('assistant', 'Falha na sincronização: ' + err.message);
         }
       });
 
-      document.getElementById('btn-health').addEventListener('click', async function () {
-        const baseUrl = (localStorage.getItem('lux_url') || inpUrl.value || '').trim().replace(/\/+$/, '');
-        if (!baseUrl) {
-          appendTurn('assistant', 'Informe ou sincronize uma URL primeiro.');
+      async function checkStatus() {
+        const api = (localStorage.getItem('lux_v12_api') || $('cfg-api').value || '').trim().replace(/\/+$/, '');
+        if (!api) {
+          addChat('assistant', 'Configure ou sincronize a URL da API primeiro.');
           return;
         }
-        const bubble = appendTurn('assistant', 'Testando ' + baseUrl + '/health ...');
+        switchTab('status');
+        $('status-dump').textContent = 'Consultando ' + api + '/status ...';
         try {
-          const res = await fetch(baseUrl + '/health');
-          const txt = await res.text();
-          setStatus(baseUrl, res.ok ? 'ok' : 'err');
-          bubble.textContent = 'HTTP ' + res.status + ' — ' + txt;
-        } catch (err) {
-          setStatus('Sem resposta', 'err');
-          bubble.textContent = 'Falha em /health: ' + err.message;
-        }
-      });
-
-      async function sendPrompt() {
-        const baseUrl = (localStorage.getItem('lux_url') || inpUrl.value || '').trim().replace(/\/+$/, '');
-        const rawRoute = (localStorage.getItem('lux_route') || inpRoute.value || '/executar').trim();
-        const route = rawRoute.startsWith('/') ? rawRoute : '/' + rawRoute;
-        const text = promptEl.value.trim();
-        if (!text) return;
-        if (!baseUrl) {
-          appendTurn('assistant', 'Configure ou sincronize a URL do Colab antes de enviar.');
-          return;
-        }
-        appendTurn('user', text);
-        promptEl.value = '';
-        autoGrow();
-        const replyBubble = appendTurn('assistant', 'Pensando...');
-        try {
-          const res = await fetch(baseUrl + route, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: text, message: text, text: text })
-          });
+          const res = await fetch(api + '/status');
           const data = await res.json();
-          replyBubble.textContent = data.reply || data.response || data.output || data.text || JSON.stringify(data, null, 2);
+          $('status-dump').textContent = JSON.stringify(data, null, 2);
+          setPill('dot-api', 'txt-api', 'API: online', res.ok ? 'ok' : 'err');
+          if (typeof data.tor_9050 === 'boolean') {
+            setPill('dot-tor', 'txt-tor', 'Tor: ' + (data.tor_9050 ? 'ON' : 'OFF'), data.tor_9050 ? 'ok' : 'err');
+          }
+          if (typeof data.i2pd_4444 === 'boolean') {
+            setPill('dot-i2p', 'txt-i2p', 'I2Pd: ' + (data.i2pd_4444 ? 'ON' : 'OFF'), data.i2pd_4444 ? 'ok' : 'err');
+          }
         } catch (err) {
-          replyBubble.textContent = 'Erro na requisição: ' + err.message;
+          $('status-dump').textContent = 'Erro ao consultar /status: ' + err.message;
+          setPill('dot-api', 'txt-api', 'API: offline', 'err');
         }
       }
 
-      document.getElementById('btn-send').addEventListener('click', sendPrompt);
-      promptEl.addEventListener('keydown', function (ev) {
-        if (ev.key === 'Enter' && !ev.shiftKey) {
-          ev.preventDefault();
-          sendPrompt();
+      $('btn-status').addEventListener('click', checkStatus);
+
+      function openUrl(val, label) {
+        const u = (val || '').trim();
+        if (u) window.open(u, '_blank', 'noopener');
+        else addChat('assistant', 'Nenhuma URL configurada para ' + label + '.');
+      }
+
+      $('open-creativefield').addEventListener('click', () => openUrl($('cfg-creative').value || localStorage.getItem('lux_v12_creative'), 'CreativeField'));
+      $('btn-studio-cf').addEventListener('click', () => openUrl($('cfg-creative').value || localStorage.getItem('lux_v12_creative'), 'CreativeField'));
+      $('open-comfy').addEventListener('click', () => openUrl($('cfg-comfy').value || localStorage.getItem('lux_v12_comfy'), 'ComfyUI'));
+      $('btn-studio-cui').addEventListener('click', () => openUrl($('cfg-comfy').value || localStorage.getItem('lux_v12_comfy'), 'ComfyUI'));
+      $('open-docs').addEventListener('click', () => {
+        const api = (localStorage.getItem('lux_v12_api') || $('cfg-api').value || '').trim().replace(/\/+$/, '');
+        openUrl(api ? api + '/docs' : '', 'API /docs');
+      });
+
+      $('btn-run-studio').addEventListener('click', async () => {
+        const api = (localStorage.getItem('lux_v12_api') || $('cfg-api').value || '').trim().replace(/\/+$/, '');
+        const routeRaw = (localStorage.getItem('lux_v12_route') || $('cfg-route').value || '/executar').trim();
+        const route = routeRaw.startsWith('/') ? routeRaw : '/' + routeRaw;
+        const prompt = $('st-prompt').value.trim() || 'Cena cinematográfica em 720p a 24fps';
+        const model = $('st-model').value;
+        if (!api) {
+          $('studio-out').textContent = 'Configure ou sincronize a URL da API primeiro.';
+          return;
+        }
+        $('studio-out').textContent = 'Enviando para ' + api + route + ' ...';
+        try {
+          const res = await fetch(api + route, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, mode: 'video_comfy', model, params: { prompt, model } })
+          });
+          const data = await res.json();
+          $('studio-out').textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+          $('studio-out').textContent = 'Erro: ' + err.message;
         }
       });
 
-      syncStatusFromStorage();
+      async function sendMessage() {
+        const text = inpMsg.value.trim();
+        if (!text) return;
+        const api = (localStorage.getItem('lux_v12_api') || $('cfg-api').value || '').trim().replace(/\/+$/, '');
+        const routeRaw = (localStorage.getItem('lux_v12_route') || $('cfg-route').value || '/executar').trim();
+        const route = routeRaw.startsWith('/') ? routeRaw : '/' + routeRaw;
+        const mode = (localStorage.getItem('lux_v12_mode') || $('cfg-mode').value || 'chat');
+
+        addChat('user', text);
+        inpMsg.value = '';
+        inpMsg.style.height = 'auto';
+        const out = addChat('assistant', 'Processando...');
+
+        if (!api) {
+          out.textContent = 'Configure ou sincronize a URL da API em ⚙️ Config para enviar mensagens.';
+          return;
+        }
+
+        try {
+          const res = await fetch(api + route, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: text, message: text, text: text, mode })
+          });
+          const data = await res.json();
+          out.textContent = data.reply || data.response || data.output || data.text || JSON.stringify(data, null, 2);
+        } catch (err) {
+          out.textContent = 'Erro na API: ' + err.message;
+        }
+      }
+
+      $('btn-send').addEventListener('click', sendMessage);
+      inpMsg.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      inpMsg.addEventListener('input', () => {
+        inpMsg.style.height = 'auto';
+        inpMsg.style.height = Math.min(inpMsg.scrollHeight, 160) + 'px';
+      });
+
+      if (($('cfg-api').value || '').trim()) {
+        setPill('dot-api', 'txt-api', 'API: configurada', 'ok');
+      }
     })();
   </script>
 </body>
