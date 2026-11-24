@@ -1,953 +1,498 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LUX-Ω Omni-Stack Console</title>
-  <style>
-    :root {
-      --bg-main: #131314;
-      --bg-panel: #1e1f20;
-      --bg-card: #282a2c;
-      --bg-hover: #333537;
-      --text-main: #e3e3e3;
-      --text-muted: #9aa0a6;
-      --accent: #8ab4f8;
-      --accent-soft: rgba(138, 180, 248, 0.14);
-      --ok: #81c995;
-      --warn: #fdd663;
-      --err: #f28b82;
-      --border: #3c4043;
-      --radius: 16px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg-main);
-      color: var(--text-main);
-      height: 100vh;
-      display: flex;
-      overflow: hidden;
-    }
-
-    /* Sidebar */
-    aside {
-      width: 280px;
-      background: var(--bg-panel);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      padding: 14px;
-      gap: 10px;
-      transition: transform 0.22s ease, width 0.22s ease;
-      z-index: 20;
-    }
-
-    aside.collapsed {
-      width: 0;
-      padding: 0;
-      border-right: none;
-      overflow: hidden;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 6px;
-      font-weight: 700;
-      font-size: 15px;
-      letter-spacing: 0.3px;
-    }
-
-    .btn {
-      background: var(--bg-card);
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-size: 13px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.15s ease, border-color 0.15s ease;
-      text-decoration: none;
-    }
-
-    .btn:hover {
-      background: var(--bg-hover);
-      border-color: var(--accent);
-    }
-
-    .btn.primary {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .btn.small {
-      padding: 6px 9px;
-      font-size: 12px;
-    }
-
-    .nav-list {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      overflow-y: auto;
-      flex: 1;
-    }
-
-    .nav-item {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      color: var(--text-main);
-      border: 1px solid transparent;
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav-item:hover {
-      background: var(--bg-hover);
-    }
-
-    .nav-item.active {
-      background: var(--accent-soft);
-      border-color: rgba(138, 180, 248, 0.35);
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 8px 8px 2px;
-      letter-spacing: 0.6px;
-    }
-
-    /* Main Workspace */
-    .workspace {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    header {
-      height: 58px;
-      border-bottom: 1px solid var(--border);
-      padding: 0 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: var(--bg-main);
-    }
-
-    .header-left, .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--text-muted);
-    }
-
-    .dot.ok { background: var(--ok); }
-    .dot.warn { background: var(--warn); }
-    .dot.err { background: var(--err); }
-
-    /* Chat & Panels */
-    main {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .hero {
-      max-width: 820px;
-      margin: 24px auto 8px;
-      text-align: center;
-    }
-
-    .hero h1 {
-      font-size: 28px;
-      font-weight: 700;
-      background: linear-gradient(90deg, #8ab4f8, #c58af9, #81c995);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-    }
-
-    .hero p {
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-
-    .suggestions {
-      max-width: 820px;
-      margin: 12px auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 10px;
-    }
-
-    .card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      cursor: pointer;
-      transition: border-color 0.15s ease, transform 0.15s ease;
-    }
-
-    .card:hover {
-      border-color: var(--accent);
-      transform: translateY(-1px);
-    }
-
-    .card-title {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .card-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .msg {
-      max-width: 860px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 14px 16px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      line-height: 1.5;
-      font-size: 14px;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .msg.user {
-      background: var(--bg-card);
-      align-self: flex-end;
-    }
-
-    .msg.assistant {
-      background: var(--bg-panel);
-    }
-
-    .msg-meta {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .media-box {
-      margin-top: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .media-box audio, .media-box video, .media-box img {
-      max-width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-
-    /* Config Drawer / Modal */
-    .drawer {
-      max-width: 860px;
-      width: 100%;
-      margin: 0 auto;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      display: none;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .drawer.open {
-      display: flex;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 10px;
-    }
-
-    label {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    input, select, textarea {
-      background: var(--bg-main);
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 9px 11px;
-      font-size: 13px;
-      font-family: inherit;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    /* Composer */
-    .composer-wrap {
-      border-top: 1px solid var(--border);
-      padding: 12px 16px 16px;
-      background: var(--bg-main);
-    }
-
-    .composer {
-      max-width: 860px;
-      margin: 0 auto;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 10px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .composer-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .attachments {
-      display: none;
-      gap: 8px;
-      flex-wrap: wrap;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .attachments.visible {
-      display: flex;
-    }
-
-    .input-row {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-    }
-
-    textarea#promptInput {
-      flex: 1;
-      resize: none;
-      min-height: 44px;
-      max-height: 180px;
-      border: none;
-      background: transparent;
-      padding: 8px 4px;
-      font-size: 14px;
-    }
-
-    textarea#promptInput:focus {
-      outline: none;
-    }
-
-    @media (max-width: 768px) {
-      aside {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-      }
-      aside.collapsed {
-        transform: translateX(-100%);
-        width: 280px;
-        padding: 14px;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUX-Ω — Estúdio Multimodal, Dublagem e Pesquisa</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #131822;
+    --panel-2: #1a2130;
+    --border: #273146;
+    --text: #eef2f8;
+    --muted: #9aa7bd;
+    --accent: #5b8cff;
+    --accent-2: #22c55e;
+    --warn: #f59e0b;
+    --err: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.4px; }
+  .status-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 0.85rem; }
+  .pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .pill.ok { border-color: rgba(34,197,94,0.45); color: #86efac; }
+  .pill.err { border-color: rgba(239,68,68,0.45); color: #fca5a5; }
+  .conn-box { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%; }
+  input, select, textarea, button {
+    font-family: inherit;
+    font-size: 0.92rem;
+    color: var(--text);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  input[type="text"], input[type="url"] { flex: 1; min-width: 220px; }
+  button {
+    background: var(--accent);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 14px;
+  }
+  button.secondary { background: var(--panel-2); border: 1px solid var(--border); }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+  main { max-width: 1120px; margin: 18px auto; padding: 0 16px 40px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .tab { background: var(--panel); border: 1px solid var(--border); color: var(--muted); }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .view { display: none; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .view.active { display: block; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
+  textarea { min-height: 110px; resize: vertical; }
+  .result-box {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.9rem;
+  }
+  video, audio, img.preview { max-width: 100%; border-radius: 10px; margin-top: 10px; display: block; }
+  .hint { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+</style>
 </head>
 <body>
-  <aside id="sidebar">
-    <div class="brand">
-      <span>LUX-Ω Console</span>
-      <button class="btn small" id="newChatBtn" title="Nova conversa">+ Novo</button>
-    </div>
+<header>
+  <div class="brand">LUX-Ω — Estúdio Colab</div>
+  <div class="status-bar">
+    <span id="apiBadge" class="pill">API: desconectada</span>
+    <span id="vramBadge" class="pill">VRAM: --</span>
+    <span id="comfyBadge" class="pill">Comfy: --</span>
+  </div>
+  <div class="conn-box">
+    <input id="apiUrlInput" type="url" placeholder="https://xxxx.trycloudflare.com">
+    <button id="connectBtn">Conectar</button>
+    <button id="syncChannelBtn" class="secondary">Buscar ntfy</button>
+    <input id="channelInput" type="text" value="lux-omega-kauan-v55" style="max-width: 210px;" title="Canal ntfy">
+  </div>
+</header>
 
-    <div class="section-label">Ferramentas do Colab</div>
-    <div class="nav-list" id="toolNav">
-      <button class="nav-item active" data-mode="llm_gpu">💬 Chat IA (LLM GPU)</button>
-      <button class="nav-item" data-mode="iceberg_search">🧊 Iceberg Search</button>
-      <button class="nav-item" data-mode="iceberg_fetch">🧅 Inspecionar .onion / .i2p</button>
-      <button class="nav-item" data-mode="video_gpu">🎬 Gerar Vídeo (GPU)</button>
-      <button class="nav-item" data-mode="voice_clone">🎙️ Clonar Voz (XTTS / F5)</button>
-      <button class="nav-item" data-mode="face_swap">🎭 Trocar Rosto (Face Swap)</button>
-      <button class="nav-item" data-mode="whisper">📝 Transcrever Áudio/URL</button>
-      <button class="nav-item" data-mode="crawl4ai">🕸️ Extrair Página (Crawl4AI)</button>
-      <button class="nav-item" data-mode="tts">🔊 Voz Rápida (Edge-TTS)</button>
-      <button class="nav-item" data-mode="python">🐍 Executar Python</button>
-    </div>
-
-    <div class="section-label">Estúdios Externos</div>
-    <a class="btn small" id="cfLinkBtn" href="#" target="_blank" rel="noopener noreferrer">🎬 Abrir CreativeField</a>
-    <a class="btn small" id="comfyLinkBtn" href="#" target="_blank" rel="noopener noreferrer">⚙️ Abrir ComfyUI</a>
-
-    <div class="section-label">Conexão</div>
-    <button class="btn small" id="toggleConfigBtn">⚙️ Túneis e Sincronização</button>
-  </aside>
-
-  <div class="workspace">
-    <header>
-      <div class="header-left">
-        <button class="btn small" id="menuBtn" title="Menu">☰</button>
-        <span class="pill" id="modeBadge">Modo: Chat IA (LLM GPU)</span>
-      </div>
-
-      <div class="header-right">
-        <span class="pill" title="Status da API FastAPI"><span class="dot" id="dotApi"></span><span id="txtApi">API: pendente</span></span>
-        <span class="pill" title="Tor SOCKS5 9050"><span class="dot" id="dotTor"></span><span id="txtTor">Tor 9050</span></span>
-        <span class="pill" title="I2Pd HTTP 4444"><span class="dot" id="dotI2p"></span><span id="txtI2p">I2Pd 4444</span></span>
-        <button class="btn small primary" id="syncBtn">📡 Sincronizar</button>
-        <button class="btn small" id="newnymBtn">🔄 Novo IP</button>
-      </div>
-    </header>
-
-    <main id="chatMain">
-      <div class="drawer" id="configDrawer">
-        <strong>Configuração de Túneis e Canal ntfy.sh</strong>
-        <div class="grid-2">
-          <label>
-            URL da API FastAPI (trycloudflare.com)
-            <input type="text" id="cfgApiUrl" placeholder="https://....trycloudflare.com" />
-          </label>
-          <label>
-            Canal de Sincronização (ntfy.sh)
-            <input type="text" id="cfgChannel" value="lux-omega-kauan-v55" />
-          </label>
-          <label>
-            URL do ComfyUI (opcional)
-            <input type="text" id="cfgComfyUrl" placeholder="https://....trycloudflare.com" />
-          </label>
-          <label>
-            URL do CreativeField (opcional)
-            <input type="text" id="cfgCfUrl" placeholder="https://....trycloudflare.com" />
-          </label>
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn small primary" id="saveConfigBtn">💾 Salvar e Testar</button>
-          <button class="btn small" id="pullChannelBtn">📡 Buscar no Canal Agora</button>
-        </div>
-      </div>
-
-      <div class="hero" id="heroBlock">
-        <h1>LUX-Ω Conectado ao Colab</h1>
-        <p>Pronto para operar com o backend FastAPI, ComfyUI, CreativeField e daemons Tor/I2Pd sincronizados pelo canal <code>lux-omega-kauan-v55</code>.</p>
-      </div>
-
-      <div class="suggestions" id="suggestionsBlock">
-        <div class="card" data-preset-mode="llm_gpu" data-preset-text="Resuma os principais pontos deste projeto e sugira próximos testes na GPU.">
-          <div class="card-title">💬 Chat na GPU</div>
-          <div class="card-sub">Envia o prompt para a rota /run (llm_gpu).</div>
-        </div>
-        <div class="card" data-preset-mode="iceberg_search" data-preset-text="open source video generation models comfyui">
-          <div class="card-title">🧊 Busca Iceberg</div>
-          <div class="card-sub">Consulta /iceberg/search no backend do Colab.</div>
-        </div>
-        <div class="card" data-preset-mode="video_gpu" data-preset-text="Cinematic aerial shot of a coastal cliff at sunset, 4k">
-          <div class="card-title">🎬 Vídeo na GPU</div>
-          <div class="card-sub">Aciona /run com tool video_gpu.</div>
-        </div>
-      </div>
-    </main>
-
-    <div class="composer-wrap">
-      <div class="composer">
-        <div class="composer-top">
-          <select id="modeSelect" style="width:auto; padding:6px 10px; font-size:12px;">
-            <option value="llm_gpu">💬 Chat IA (LLM GPU)</option>
-            <option value="iceberg_search">🧊 Iceberg Search</option>
-            <option value="iceberg_fetch">🧅 Inspecionar .onion / .i2p</option>
-            <option value="video_gpu">🎬 Gerar Vídeo (GPU)</option>
-            <option value="voice_clone">🎙️ Clonar Voz (XTTS / F5)</option>
-            <option value="face_swap">🎭 Trocar Rosto (Face Swap)</option>
-            <option value="whisper">📝 Transcrever Áudio/URL</option>
-            <option value="crawl4ai">🕸️ Extrair Página (Crawl4AI)</option>
-            <option value="tts">🔊 Voz Rápida (Edge-TTS)</option>
-            <option value="python">🐍 Executar Python</option>
-          </select>
-
-          <div id="extraOptions" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-            <select id="langSelect" style="display:none; width:auto; padding:5px 8px; font-size:12px;">
-              <option value="pt">pt</option>
-              <option value="en">en</option>
-              <option value="es">es</option>
-            </select>
-            <select id="voiceEngineSelect" style="display:none; width:auto; padding:5px 8px; font-size:12px;">
-              <option value="xtts">xtts</option>
-              <option value="f5">f5</option>
-            </select>
-            <input type="text" id="targetNameInput" placeholder="Nome (Face Swap opcional)" style="display:none; width:190px; padding:5px 8px; font-size:12px;" />
-          </div>
-        </div>
-
-        <div class="attachments" id="attachmentsBar">
-          <label style="flex-direction:row; align-items:center; gap:6px; cursor:pointer;">
-            📎 Arquivo principal:
-            <input type="file" id="mainFileInput" style="max-width:220px;" />
-          </label>
-          <label id="faceFileLabel" style="display:none; flex-direction:row; align-items:center; gap:6px; cursor:pointer;">
-            🙂 Foto do rosto:
-            <input type="file" id="faceFileInput" accept="image/*" style="max-width:200px;" />
-          </label>
-        </div>
-
-        <div class="input-row">
-          <textarea id="promptInput" placeholder="Digite sua mensagem, consulta, URL ou comando... (Enter envia, Shift+Enter quebra linha)"></textarea>
-          <button class="btn primary" id="sendBtn">Enviar</button>
-        </div>
-      </div>
-    </div>
+<main>
+  <div class="tabs">
+    <button class="tab active" data-tab="dub">Dublagem & Face Swap (/dub_video)</button>
+    <button class="tab" data-tab="voice">Clonar Voz (/voice_clone)</button>
+    <button class="tab" data-tab="swap">Trocar Rosto (/face_swap)</button>
+    <button class="tab" data-tab="video">Vídeo GPU (video_gpu)</button>
+    <button class="tab" data-tab="tools">LLM / Whisper / Crawl4AI (/run)</button>
   </div>
 
-  <script>
-    const STORAGE_KEY = "lux_omega_github_sync_v1";
-    const state = {
-      mode: "llm_gpu",
-      apiUrl: "",
-      comfyUrl: "",
-      cfUrl: "",
-      channel: "lux-omega-kauan-v55"
-    };
+  <!-- ABA 1: DUB_VIDEO -->
+  <section id="tab-dub" class="view active">
+    <h3>Dublagem + Troca de Rosto + Sincronização Labial</h3>
+    <div class="grid">
+      <label>Vídeo base (obrigatório)
+        <input id="dubVideoFile" type="file" accept="video/*">
+      </label>
+      <label>Pessoa alvo p/ rosto (opcional — busca foto)
+        <input id="dubTargetName" type="text" placeholder="Ex: Keanu Reeves">
+      </label>
+      <label>Idioma da fala
+        <select id="dubLang">
+          <option value="pt">Português (pt)</option>
+          <option value="en">Inglês (en)</option>
+          <option value="es">Espanhol (es)</option>
+          <option value="fr">Francês (fr)</option>
+          <option value="de">Alemão (de)</option>
+          <option value="it">Italiano (it)</option>
+        </select>
+      </label>
+      <label>Áudio/vídeo de referência de voz (opcional)
+        <input id="dubVoiceFile" type="file" accept="audio/*,video/*">
+      </label>
+    </div>
+    <label>Texto para dublar (se vazio e houver nome, faz apenas troca de rosto)
+      <textarea id="dubText" placeholder="Digite o texto que o personagem vai falar..."></textarea>
+    </label>
+    <button id="dubSubmitBtn">Iniciar Dublagem</button>
+    <div class="hint">Os resultados ficam na sessão temporária do Colab e devem ser baixados na hora.</div>
+    <div id="dubResult" class="result-box">Aguardando envio...</div>
+  </section>
 
-    const modeLabels = {
-      llm_gpu: "Chat IA (LLM GPU)",
-      iceberg_search: "Iceberg Search",
-      iceberg_fetch: "Inspecionar .onion / .i2p",
-      video_gpu: "Gerar Vídeo (GPU)",
-      voice_clone: "Clonar Voz (XTTS / F5)",
-      face_swap: "Trocar Rosto (Face Swap)",
-      whisper: "Transcrever Áudio/URL",
-      crawl4ai: "Extrair Página (Crawl4AI)",
-      tts: "Voz Rápida (Edge-TTS)",
-      python: "Executar Python"
-    };
+  <!-- ABA 2: VOICE_CLONE -->
+  <section id="tab-voice" class="view">
+    <h3>Clonagem de Voz (/voice_clone)</h3>
+    <div class="grid">
+      <label>Arquivo de áudio/vídeo de referência
+        <input id="voiceFile" type="file" accept="audio/*,video/*">
+      </label>
+      <label>Ou URL de mídia (YouTube, etc.)
+        <input id="voiceUrl" type="url" placeholder="https://...">
+      </label>
+      <label>Motor
+        <select id="voiceEngine">
+          <option value="xtts">XTTS-v2</option>
+          <option value="f5">F5-TTS</option>
+        </select>
+      </label>
+      <label>Idioma
+        <input id="voiceLang" type="text" value="pt">
+      </label>
+      <label>Limpar fundo (Demucs)
+        <select id="voiceCleanBg">
+          <option value="1">Sim (1)</option>
+          <option value="0">Não (0)</option>
+        </select>
+      </label>
+    </div>
+    <label>Texto a sintetizar
+      <textarea id="voiceText" placeholder="Texto com a voz clonada..."></textarea>
+    </label>
+    <button id="voiceSubmitBtn">Gerar Voz</button>
+    <div id="voiceResult" class="result-box">Aguardando envio...</div>
+  </section>
 
-    const $ = (id) => document.getElementById(id);
+  <!-- ABA 3: FACE_SWAP -->
+  <section id="tab-swap" class="view">
+    <h3>Troca de Rosto (/face_swap)</h3>
+    <div class="grid">
+      <label>Imagem ou vídeo base (obrigatório)
+        <input id="swapMediaFile" type="file" accept="image/*,video/*">
+      </label>
+      <label>Nome da pessoa (busca automática)
+        <input id="swapTargetName" type="text" placeholder="Ex: Pedro Pascal">
+      </label>
+      <label>Ou foto de referência do rosto
+        <input id="swapFaceFile" type="file" accept="image/*">
+      </label>
+    </div>
+    <button id="swapSubmitBtn">Aplicar Face Swap</button>
+    <div id="swapResult" class="result-box">Aguardando envio...</div>
+  </section>
 
-    function loadState() {
+  <!-- ABA 4: VIDEO_GPU -->
+  <section id="tab-video" class="view">
+    <h3>Geração de Vídeo na GPU (video_gpu)</h3>
+    <div class="grid">
+      <label>Motor
+        <select id="vidEngine">
+          <option value="wan">Wan 2.1 T2V</option>
+          <option value="ltx">LTX-Video</option>
+        </select>
+      </label>
+    </div>
+    <label>Prompt do vídeo
+      <textarea id="vidPrompt" placeholder="Cinematic drone shot over neon cyberpunk city at night, 4k"></textarea>
+    </label>
+    <button id="vidSubmitBtn">Gerar Vídeo</button>
+    <div id="vidResult" class="result-box">Aguardando envio...</div>
+  </section>
+
+  <!-- ABA 5: TOOLS -->
+  <section id="tab-tools" class="view">
+    <h3>LLM GPU / Whisper / Crawl4AI (/run)</h3>
+    <div class="grid">
+      <label>Ferramenta
+        <select id="toolSelect">
+          <option value="llm_gpu">LLM GPU (Qwen2.5-7B)</option>
+          <option value="whisper">Whisper + RAG (URL áudio/vídeo)</option>
+          <option value="crawl4ai">Crawl4AI + RAG (URL web)</option>
+          <option value="tts">Edge TTS (pt-BR)</option>
+          <option value="python">Python rápido</option>
+        </select>
+      </label>
+      <label>URL (para Whisper ou Crawl4AI)
+        <input id="toolUrl" type="url" placeholder="https://...">
+      </label>
+    </div>
+    <label>Prompt / Texto / Código Python
+      <textarea id="toolInput" placeholder="Digite seu prompt, texto para TTS ou código Python..."></textarea>
+    </label>
+    <button id="toolSubmitBtn">Executar</button>
+    <div id="toolResult" class="result-box">Aguardando execução...</div>
+  </section>
+</main>
+
+<script>
+const STORAGE_KEY = "lux_omega_api_url";
+let apiUrl = (localStorage.getItem(STORAGE_KEY) || "").replace(/\/+$/, "");
+
+const apiUrlInput = document.getElementById("apiUrlInput");
+const apiBadge = document.getElementById("apiBadge");
+const vramBadge = document.getElementById("vramBadge");
+const comfyBadge = document.getElementById("comfyBadge");
+
+if (apiUrl) apiUrlInput.value = apiUrl;
+
+function setApiUrl(url) {
+  apiUrl = (url || "").trim().replace(/\/+$/, "");
+  apiUrlInput.value = apiUrl;
+  if (apiUrl) localStorage.setItem(STORAGE_KEY, apiUrl);
+}
+
+function resolveMediaUrl(u) {
+  if (!u) return "";
+  if (u.startsWith("http://") || u.startsWith("https://")) return u;
+  return apiUrl + (u.startsWith("/") ? u : "/" + u);
+}
+
+function renderPayload(box, data) {
+  box.innerHTML = "";
+  const pre = document.createElement("pre");
+  pre.style.margin = "0";
+  pre.style.whiteSpace = "pre-wrap";
+  pre.textContent = JSON.stringify(data, null, 2);
+  box.appendChild(pre);
+
+  const mediaUrl = resolveMediaUrl(data && data.url);
+  if (!mediaUrl) return;
+
+  const link = document.createElement("a");
+  link.href = mediaUrl;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.textContent = "Abrir / Baixar arquivo gerado";
+  link.style.display = "inline-block";
+  link.style.marginTop = "8px";
+  link.style.color = "#93c5fd";
+  box.appendChild(link);
+
+  if (data.type === "video" || /\.(mp4|webm|mov)(\?|$)/i.test(mediaUrl)) {
+    const vid = document.createElement("video");
+    vid.src = mediaUrl;
+    vid.controls = true;
+    box.appendChild(vid);
+  } else if (data.type === "audio" || /\.(wav|mp3|ogg)(\?|$)/i.test(mediaUrl)) {
+    const aud = document.createElement("audio");
+    aud.src = mediaUrl;
+    aud.controls = true;
+    box.appendChild(aud);
+  } else if (data.type === "image" || /\.(jpg|jpeg|png|webp)(\?|$)/i.test(mediaUrl)) {
+    const img = document.createElement("img");
+    img.src = mediaUrl;
+    img.className = "preview";
+    box.appendChild(img);
+  }
+}
+
+async function pollJob(jobId, box) {
+  for (let i = 0; i < 600; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    const res = await fetch(`${apiUrl}/jobs/${encodeURIComponent(jobId)}`);
+    const data = await res.json();
+    if (data.status === "queued" || data.status === "running") {
+      box.textContent = `Job ${jobId}: ${data.status}...`;
+      continue;
+    }
+    renderPayload(box, data);
+    return;
+  }
+  box.textContent = `Job ${jobId} ainda em processamento após limite de espera.`;
+}
+
+async function checkStatus() {
+  if (!apiUrl) {
+    apiBadge.textContent = "API: desconectada";
+    apiBadge.className = "pill err";
+    return;
+  }
+  try {
+    const res = await fetch(`${apiUrl}/status`);
+    const st = await res.json();
+    if (st.ok) {
+      apiBadge.textContent = "API: online";
+      apiBadge.className = "pill ok";
+      vramBadge.textContent = `VRAM livre: ${st.free_vram_gb ?? "--"} GB`;
+      comfyBadge.textContent = `Comfy 8188: ${st.comfy_8188 ? "on" : "off"}`;
+    } else {
+      throw new Error("Status inválido");
+    }
+  } catch (e) {
+    apiBadge.textContent = "API: offline";
+    apiBadge.className = "pill err";
+  }
+}
+
+document.getElementById("connectBtn").addEventListener("click", async () => {
+  setApiUrl(apiUrlInput.value);
+  await checkStatus();
+});
+
+document.getElementById("syncChannelBtn").addEventListener("click", async () => {
+  const ch = document.getElementById("channelInput").value.trim();
+  if (!ch) return;
+  try {
+    const res = await fetch(`https://ntfy.sh/${encodeURIComponent(ch)}/json?poll=1&since=1h`);
+    const raw = await res.text();
+    const lines = raw.trim().split("\n").filter(Boolean);
+    for (let i = lines.length - 1; i >= 0; i--) {
       try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-        if (saved.apiUrl) state.apiUrl = saved.apiUrl;
-        if (saved.comfyUrl) state.comfyUrl = saved.comfyUrl;
-        if (saved.cfUrl) state.cfUrl = saved.cfUrl;
-        if (saved.channel) state.channel = saved.channel;
+        const outer = JSON.parse(lines[i]);
+        const inner = typeof outer.message === "string" ? JSON.parse(outer.message) : outer.message;
+        if (inner && inner.api_url) {
+          setApiUrl(inner.api_url);
+          await checkStatus();
+          return;
+        }
       } catch (_) {}
-      syncInputsFromState();
-      updateExternalLinks();
     }
+    alert("Nenhuma URL recente encontrada no canal ntfy.");
+  } catch (e) {
+    alert("Falha ao consultar canal ntfy: " + e.message);
+  }
+});
 
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        apiUrl: state.apiUrl,
-        comfyUrl: state.comfyUrl,
-        cfUrl: state.cfUrl,
-        channel: state.channel
-      }));
-      updateExternalLinks();
-    }
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
 
-    function syncInputsFromState() {
-      $("cfgApiUrl").value = state.apiUrl;
-      $("cfgComfyUrl").value = state.comfyUrl;
-      $("cfgCfUrl").value = state.cfUrl;
-      $("cfgChannel").value = state.channel;
-    }
+function requireApi(box) {
+  if (!apiUrl) {
+    box.textContent = "Informe e conecte primeiro a URL da API (trycloudflare.com).";
+    return false;
+  }
+  return true;
+}
 
-    function updateExternalLinks() {
-      $("cfLinkBtn").href = state.cfUrl || "#";
-      $("comfyLinkBtn").href = state.comfyUrl || "#";
-    }
+// 1. Dublagem (/dub_video -> job -> /jobs/{id})
+document.getElementById("dubSubmitBtn").addEventListener("click", async () => {
+  const box = document.getElementById("dubResult");
+  if (!requireApi(box)) return;
+  const vid = document.getElementById("dubVideoFile").files[0];
+  if (!vid) { box.textContent = "Selecione um vídeo base."; return; }
+  const fd = new FormData();
+  fd.append("video_file", vid);
+  fd.append("target_name", document.getElementById("dubTargetName").value);
+  fd.append("language", document.getElementById("dubLang").value);
+  fd.append("text", document.getElementById("dubText").value);
+  const vFile = document.getElementById("dubVoiceFile").files[0];
+  if (vFile) fd.append("voice_file", vFile);
 
-    function cleanBaseUrl(u) {
-      return (u || "").trim().replace(/\/+$/, "");
-    }
+  box.textContent = "Enviando para /dub_video...";
+  const res = await fetch(`${apiUrl}/dub_video`, { method: "POST", body: fd });
+  const data = await res.json();
+  if (data.job_id) {
+    box.textContent = `Job ${data.job_id} enfileirado...`;
+    await pollJob(data.job_id, box);
+  } else {
+    renderPayload(box, data);
+  }
+});
 
-    function setMode(newMode) {
-      state.mode = newMode;
-      $("modeSelect").value = newMode;
-      $("modeBadge").textContent = "Modo: " + (modeLabels[newMode] || newMode);
+// 2. Voice clone (/voice_clone)
+document.getElementById("voiceSubmitBtn").addEventListener("click", async () => {
+  const box = document.getElementById("voiceResult");
+  if (!requireApi(box)) return;
+  const fd = new FormData();
+  fd.append("text", document.getElementById("voiceText").value);
+  fd.append("language", document.getElementById("voiceLang").value);
+  fd.append("engine", document.getElementById("voiceEngine").value);
+  fd.append("clean_bg", document.getElementById("voiceCleanBg").value);
+  fd.append("media_url", document.getElementById("voiceUrl").value);
+  const f = document.getElementById("voiceFile").files[0];
+  if (f) fd.append("file", f);
 
-      document.querySelectorAll("#toolNav .nav-item").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.mode === newMode);
-      });
+  box.textContent = "Clonando voz...";
+  const res = await fetch(`${apiUrl}/voice_clone`, { method: "POST", body: fd });
+  renderPayload(box, await res.json());
+});
 
-      const showVoiceOpts = newMode === "voice_clone";
-      const showFaceOpts = newMode === "face_swap";
-      const needsFile = showVoiceOpts || showFaceOpts;
+// 3. Face swap (/face_swap)
+document.getElementById("swapSubmitBtn").addEventListener("click", async () => {
+  const box = document.getElementById("swapResult");
+  if (!requireApi(box)) return;
+  const media = document.getElementById("swapMediaFile").files[0];
+  if (!media) { box.textContent = "Selecione imagem ou vídeo base."; return; }
+  const fd = new FormData();
+  fd.append("media_file", media);
+  fd.append("target_name", document.getElementById("swapTargetName").value);
+  const face = document.getElementById("swapFaceFile").files[0];
+  if (face) fd.append("face_file", face);
 
-      $("langSelect").style.display = showVoiceOpts ? "inline-block" : "none";
-      $("voiceEngineSelect").style.display = showVoiceOpts ? "inline-block" : "none";
-      $("targetNameInput").style.display = showFaceOpts ? "inline-block" : "none";
-      $("faceFileLabel").style.display = showFaceOpts ? "inline-flex" : "none";
-      $("attachmentsBar").classList.toggle("visible", needsFile);
-    }
+  box.textContent = "Processando face swap...";
+  const res = await fetch(`${apiUrl}/face_swap`, { method: "POST", body: fd });
+  renderPayload(box, await res.json());
+});
 
-    function appendMessage(role, title, bodyText, mediaObj) {
-      $("heroBlock").style.display = "none";
-      $("suggestionsBlock").style.display = "none";
-
-      const box = document.createElement("div");
-      box.className = "msg " + role;
-
-      const meta = document.createElement("div");
-      meta.className = "msg-meta";
-      meta.innerHTML = `<span>${title}</span><span>${new Date().toLocaleTimeString()}</span>`;
-      box.appendChild(meta);
-
-      const p = document.createElement("div");
-      p.textContent = bodyText;
-      box.appendChild(p);
-
-      if (mediaObj && mediaObj.url) {
-        const mWrap = document.createElement("div");
-        mWrap.className = "media-box";
-        if (mediaObj.type === "audio") {
-          const aud = document.createElement("audio");
-          aud.controls = true;
-          aud.src = mediaObj.url;
-          mWrap.appendChild(aud);
-        } else if (mediaObj.type === "video") {
-          const vid = document.createElement("video");
-          vid.controls = true;
-          vid.src = mediaObj.url;
-          mWrap.appendChild(vid);
-        } else if (mediaObj.type === "image") {
-          const img = document.createElement("img");
-          img.src = mediaObj.url;
-          mWrap.appendChild(img);
-        }
-        const link = document.createElement("a");
-        link.className = "btn small";
-        link.href = mediaObj.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent = "Abrir arquivo gerado";
-        mWrap.appendChild(link);
-        box.appendChild(mWrap);
+// 4. Video GPU (/run -> video_gpu -> /jobs/{id})
+document.getElementById("vidSubmitBtn").addEventListener("click", async () => {
+  const box = document.getElementById("vidResult");
+  if (!requireApi(box)) return;
+  box.textContent = "Enfileirando geração de vídeo...";
+  const res = await fetch(`${apiUrl}/run`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tool: "video_gpu",
+      params: {
+        engine: document.getElementById("vidEngine").value,
+        prompt: document.getElementById("vidPrompt").value
       }
+    })
+  });
+  const data = await res.json();
+  if (data.job_id) {
+    await pollJob(data.job_id, box);
+  } else {
+    renderPayload(box, data);
+  }
+});
 
-      $("chatMain").appendChild(box);
-      $("chatMain").scrollTop = $("chatMain").scrollHeight;
-    }
+// 5. Tools (/run)
+document.getElementById("toolSubmitBtn").addEventListener("click", async () => {
+  const box = document.getElementById("toolResult");
+  if (!requireApi(box)) return;
+  const tool = document.getElementById("toolSelect").value;
+  const url = document.getElementById("toolUrl").value;
+  const inp = document.getElementById("toolInput").value;
+  const params = {};
+  if (tool === "llm_gpu") params.prompt = inp;
+  else if (tool === "whisper" || tool === "crawl4ai") params.url = url || inp;
+  else if (tool === "tts") params.text = inp;
+  else if (tool === "python") params.code = inp;
 
-    function setDot(dotEl, status) {
-      dotEl.className = "dot " + (status || "");
-    }
+  box.textContent = `Executando ${tool}...`;
+  const res = await fetch(`${apiUrl}/run`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tool, params })
+  });
+  renderPayload(box, await res.json());
+});
 
-    async function checkHealth() {
-      const base = cleanBaseUrl(state.apiUrl);
-      if (!base) {
-        setDot($("dotApi"), "warn");
-        $("txtApi").textContent = "API: sem URL";
-        return;
-      }
-      try {
-        const res = await fetch(`${base}/status`, { cache: "no-store" });
-        const data = await res.json();
-        setDot($("dotApi"), data.ok ? "ok" : "err");
-        $("txtApi").textContent = data.ok ? `API: ON (${data.free_vram_gb ?? "?"} GB)` : "API: erro";
-
-        setDot($("dotTor"), data.tor_9050 ? "ok" : "warn");
-        $("txtTor").textContent = data.tor_9050 ? "Tor 9050: ON" : "Tor 9050: OFF";
-
-        setDot($("dotI2p"), data.i2pd_4444 ? "ok" : "warn");
-        $("txtI2p").textContent = data.i2pd_4444 ? "I2Pd 4444: ON" : "I2Pd 4444: OFF";
-
-        if (data.comfy_url) state.comfyUrl = data.comfy_url;
-        if (data.creativefield_url) state.cfUrl = data.creativefield_url;
-        saveState();
-        syncInputsFromState();
-      } catch (_) {
-        setDot($("dotApi"), "err");
-        $("txtApi").textContent = "API: offline";
-      }
-    }
-
-    async function syncFromChannel() {
-      const ch = ($("cfgChannel").value || state.channel || "lux-omega-kauan-v55").trim();
-      state.channel = ch;
-      saveState();
-      $("txtApi").textContent = "Sincronizando...";
-      try {
-        const res = await fetch(`https://ntfy.sh/${encodeURIComponent(ch)}/json?poll=1&since=24h`);
-        const raw = await res.text();
-        const lines = raw.trim().split("
-").filter(Boolean);
-        let parsedPayload = null;
-
-        for (let i = lines.length - 1; i >= 0; i--) {
-          try {
-            const ev = JSON.parse(lines[i]);
-            if (ev.event !== "message" || !ev.message) continue;
-            const inner = JSON.parse(ev.message);
-            if (inner && inner.api_url) {
-              parsedPayload = inner;
-              break;
-            }
-          } catch (_) {}
-        }
-
-        if (parsedPayload && parsedPayload.api_url) {
-          state.apiUrl = cleanBaseUrl(parsedPayload.api_url);
-          if (parsedPayload.comfy_url) state.comfyUrl = cleanBaseUrl(parsedPayload.comfy_url);
-          if (parsedPayload.creativefield_url) state.cfUrl = cleanBaseUrl(parsedPayload.creativefield_url);
-          saveState();
-          syncInputsFromState();
-          appendMessage("assistant", "Sincronização ntfy.sh", `URLs recebidas do canal '${ch}':
-API: ${state.apiUrl}
-ComfyUI: ${state.comfyUrl || "-"}
-CreativeField: ${state.cfUrl || "-"}`);
-          await checkHealth();
-        } else {
-          appendMessage("assistant", "Sincronização ntfy.sh", `Nenhuma mensagem JSON com 'api_url' encontrada recentemente no canal '${ch}'.`);
-        }
-      } catch (err) {
-        appendMessage("assistant", "Erro de Sincronização", String(err));
-      }
-    }
-
-    async function rotateTorIp() {
-      const base = cleanBaseUrl(state.apiUrl);
-      if (!base) return;
-      try {
-        const res = await fetch(`${base}/iceberg/newnym`, { method: "POST" });
-        const data = await res.json();
-        appendMessage("assistant", "Circuito Tor", data.ok ? `Novo circuito solicitado: ${data.tor_signal || "OK"}` : `Falha: ${data.error}`);
-      } catch (err) {
-        appendMessage("assistant", "Circuito Tor", String(err));
-      }
-    }
-
-    async function sendPrompt() {
-      const prompt = $("promptInput").value.trim();
-      const base = cleanBaseUrl(state.apiUrl);
-      if (!base) {
-        appendMessage("assistant", "Aviso", "Configure ou sincronize a URL da API FastAPI antes de enviar.");
-        $("configDrawer").classList.add("open");
-        return;
-      }
-
-      const mode = state.mode;
-      const mainFile = $("mainFileInput").files[0];
-      const faceFile = $("faceFileInput").files[0];
-
-      if (!prompt && mode !== "face_swap") return;
-      if (mode === "face_swap" && !mainFile) {
-        appendMessage("assistant", "Face Swap", "Anexe o vídeo ou imagem base no campo 📎 Arquivo principal.");
-        return;
-      }
-
-      appendMessage("user", `Você (${modeLabels[mode] || mode})`, prompt || `[Arquivo: ${mainFile?.name || ""}]`);
-      $("promptInput").value = "";
-      $("sendBtn").disabled = true;
-
-      try {
-        if (mode === "voice_clone") {
-          const fd = new FormData();
-          fd.append("text", prompt);
-          fd.append("language", $("langSelect").value);
-          fd.append("engine", $("voiceEngineSelect").value);
-          fd.append("clean_bg", "1");
-          if (prompt.startsWith("http://") || prompt.startsWith("https://")) {
-            fd.append("media_url", prompt);
-          }
-          if (mainFile) fd.append("file", mainFile);
-
-          const res = await fetch(`${base}/voice_clone`, { method: "POST", body: fd });
-          const data = await res.json();
-          if (data.ok) {
-            appendMessage("assistant", "Clonagem de Voz", `Áudio gerado (${data.engine || mode}).`, { type: "audio", url: data.url });
-          } else {
-            appendMessage("assistant", "Clonagem de Voz", `Erro: ${data.error || "Falha"}`);
-          }
-          return;
-        }
-
-        if (mode === "face_swap") {
-          const fd = new FormData();
-          fd.append("target_name", prompt || $("targetNameInput").value.trim());
-          fd.append("media_file", mainFile);
-          if (faceFile) fd.append("face_file", faceFile);
-
-          const res = await fetch(`${base}/face_swap`, { method: "POST", body: fd });
-          const data = await res.json();
-          if (data.ok) {
-            appendMessage("assistant", "Face Swap", "Processamento concluído.", { type: data.type || "video", url: data.url });
-          } else {
-            appendMessage("assistant", "Face Swap", `Erro: ${data.error || "Falha"}`);
-          }
-          return;
-        }
-
-        if (mode === "iceberg_search") {
-          const res = await fetch(`${base}/iceberg/search`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: prompt })
-          });
-          const data = await res.json();
-          const listText = (data.results || []).map((r, i) => `${i + 1}. ${r.title}
-   ${r.url}`).join("
-");
-          appendMessage("assistant", "Iceberg Search", data.ok ? (listText || "Sem resultados.") : `Erro: ${data.error}`);
-          return;
-        }
-
-        if (mode === "iceberg_fetch") {
-          const res = await fetch(`${base}/iceberg/fetch`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: prompt })
-          });
-          const data = await res.json();
-          appendMessage("assistant", "Iceberg Fetch", data.ok ? `Título: ${data.title}
-Status: ${data.status_code}
-
-${data.text || ""}` : `Erro: ${data.error}`);
-          return;
-        }
-
-        // Rotas em /run: llm_gpu, video_gpu, whisper, crawl4ai, tts, python
-        const payloadMap = {
-          llm_gpu: { tool: "llm_gpu", params: { prompt } },
-          video_gpu: { tool: "video_gpu", params: { prompt, engine: "wan" } },
-          whisper: { tool: "whisper", params: { url: prompt } },
-          crawl4ai: { tool: "crawl4ai", params: { url: prompt } },
-          tts: { tool: "tts", params: { text: prompt } },
-          python: { tool: "python", params: { code: prompt } }
-        };
-
-        const body = payloadMap[mode] || { tool: "llm_gpu", params: { prompt } };
-        const res = await fetch(`${base}/run`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        });
-        const data = await res.json();
-
-        if (!data.ok) {
-          appendMessage("assistant", modeLabels[mode], `Erro: ${data.error || data.stderr || "Falha na execução"}`);
-          return;
-        }
-
-        if (data.type === "video" || data.type === "audio" || data.type === "image") {
-          appendMessage("assistant", modeLabels[mode], "Mídia gerada com sucesso.", { type: data.type, url: data.url });
-        } else {
-          const outText = data.text || data.clean_text || data.stdout || JSON.stringify(data, null, 2);
-          appendMessage("assistant", modeLabels[mode], outText);
-        }
-      } catch (err) {
-        appendMessage("assistant", "Erro de Rede", String(err));
-      } finally {
-        $("sendBtn").disabled = false;
-      }
-    }
-
-    $("menuBtn").addEventListener("click", () => $("sidebar").classList.toggle("collapsed"));
-    $("toggleConfigBtn").addEventListener("click", () => $("configDrawer").classList.toggle("open"));
-    $("modeSelect").addEventListener("change", (e) => setMode(e.target.value));
-
-    document.querySelectorAll("#toolNav .nav-item").forEach((btn) => {
-      btn.addEventListener("click", () => setMode(btn.dataset.mode));
-    });
-
-    document.querySelectorAll("#suggestionsBlock .card").forEach((card) => {
-      card.addEventListener("click", () => {
-        setMode(card.dataset.presetMode);
-        $("promptInput").value = card.dataset.presetText;
-        $("promptInput").focus();
-      });
-    });
-
-    $("saveConfigBtn").addEventListener("click", async () => {
-      state.apiUrl = cleanBaseUrl($("cfgApiUrl").value);
-      state.comfyUrl = cleanBaseUrl($("cfgComfyUrl").value);
-      state.cfUrl = cleanBaseUrl($("cfgCfUrl").value);
-      state.channel = ($("cfgChannel").value || "lux-omega-kauan-v55").trim();
-      saveState();
-      await checkHealth();
-    });
-
-    $("pullChannelBtn").addEventListener("click", syncFromChannel);
-    $("syncBtn").addEventListener("click", syncFromChannel);
-    $("newnymBtn").addEventListener("click", rotateTorIp);
-    $("sendBtn").addEventListener("click", sendPrompt);
-
-    $("promptInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendPrompt();
-      }
-    });
-
-    $("newChatBtn").addEventListener("click", () => {
-      document.querySelectorAll("#chatMain .msg").forEach((m) => m.remove());
-      $("heroBlock").style.display = "block";
-      $("suggestionsBlock").style.display = "grid";
-    });
-
-    loadState();
-    checkHealth();
-  </script>
+checkStatus();
+</script>
 </body>
 </html>
