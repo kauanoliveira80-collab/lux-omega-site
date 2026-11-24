@@ -1,304 +1,719 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LUX-Ω v10.0 A100 TITAN — Studio Open-Source</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090f">
+  <title>LUX-Ω v5.5 — Omni-Stack & Iceberg OSINT</title>
   <style>
-    body { background: #060911; color: #e2e8f0; font-family: 'Inter', system-ui, sans-serif; }
-    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); }
-    .chip-active { background: #4f46e5 !important; border-color: #818cf8 !important; color: #fff !important; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    :root {
+      --bg: #09090f;
+      --panel: #12121c;
+      --card: #181826;
+      --border: #27273c;
+      --accent: #7c5cff;
+      --accent-hover: #6a48f5;
+      --cyan: #22d3ee;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+      --text: #f4f4f8;
+      --muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .brand h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #a78bfa, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .badge {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #1c1c2b;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .badge.on { color: var(--green); border-color: rgba(74, 222, 128, 0.35); }
+    .badge.warn { color: var(--yellow); border-color: rgba(250, 204, 21, 0.35); }
+    .badge.off { color: var(--red); border-color: rgba(248, 113, 113, 0.35); }
+    .header-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    button, .link-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: 0.15s;
+    }
+    button:hover, .link-btn:hover { background: var(--accent-hover); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.sec, .link-btn.sec {
+      background: #1e1e2e;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    button.sec:hover, .link-btn.sec:hover { background: #28283d; }
+    .link-btn.disabled { opacity: 0.4; pointer-events: none; }
+
+    #config-panel {
+      background: #0f0f18;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: none;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+      max-height: 55vh;
+      overflow-y: auto;
+    }
+    #config-panel.open { display: grid; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 0.75rem; color: var(--muted); }
+    input, select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+      width: 100%;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+    .mode-bar {
+      background: #0d0d16;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .mode-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 6px 11px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+    .mode-tab.active {
+      background: rgba(124, 92, 255, 0.16);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    #extra-bar {
+      background: #11111a;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: none;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+    #extra-bar.open { display: flex; }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .msg {
+      max-width: 88%;
+      padding: 12px 15px;
+      border-radius: 12px;
+      line-height: 1.5;
+      font-size: 0.92rem;
+      word-wrap: break-word;
+    }
+    .msg.user {
+      background: var(--accent);
+      align-self: flex-end;
+      white-space: pre-wrap;
+    }
+    .msg.ai {
+      background: var(--card);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+    }
+    .msg pre {
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+    .hit-card {
+      background: #11111b;
+      border: 1px solid #2b2b42;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 8px;
+    }
+    .hit-layer {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #232338;
+      color: var(--cyan);
+      margin-right: 6px;
+    }
+    .hit-layer.onion { color: #c084fc; background: rgba(192, 132, 252, 0.15); }
+    .hit-title { font-weight: 700; color: #fff; margin-top: 4px; display: block; }
+    .hit-url { font-size: 0.78rem; color: var(--cyan); word-break: break-all; margin: 3px 0; display: block; }
+    .hit-snippet { font-size: 0.82rem; color: var(--muted); }
+    .media-out {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+    }
+
+    form {
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    #prompt { flex: 1; padding: 10px 12px; font-size: 0.95rem; }
   </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
-
-  <!-- Cabeçalho -->
-  <header class="glass px-4 py-3 flex flex-wrap items-center justify-between gap-2 z-10">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-cyan-500 flex items-center justify-center font-bold text-white shadow-lg">Ω</div>
-      <div>
-        <div class="flex items-center gap-2">
-          <h1 class="font-bold text-base tracking-wide text-white">LUX-Ω v10.0 A100 TITAN</h1>
-          <span id="statusBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">Sincronizando A100...</span>
-        </div>
-        <p id="gpuSub" class="text-[11px] text-slate-400">Cache Drive 1x • Qwen-32B • FLUX.1 • Wan 2.1 • MusicGen • Auto-Código</p>
+<body>
+  <header>
+    <div class="brand">
+      <h1>LUX-Ω v5.5</h1>
+      <div class="badges">
+        <span class="badge warn" id="b-api">● Conectando...</span>
+        <span class="badge" id="b-gpu">GPU: --</span>
+        <span class="badge" id="b-tor">Tor 9050: --</span>
+        <span class="badge" id="b-i2p">I2Pd 4444: --</span>
       </div>
     </div>
-
-    <div class="flex flex-wrap items-center gap-2">
-      <label class="cursor-pointer text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1.5">
-        <span>🎙️ Clonar Voz</span>
-        <input type="file" id="voiceUpload" accept="audio/*" class="hidden" onchange="enviarVoz(this)" />
-      </label>
-
-      <button onclick="abrirModalRosto()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1.5">
-        <span>🎭 Trocar Rosto</span>
-      </button>
-
-      <button onclick="abrirPainelConsciencia()" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-700/40 text-emerald-300 flex items-center gap-1.5">
-        <span>🧬 Consciência A100</span>
-      </button>
-
-      <button id="ttsToggle" onclick="toggleTTS()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300">
-        🔇 Voz: OFF
-      </button>
-
-      <button onclick="document.getElementById('configModal').classList.remove('hidden')" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700">⚙️</button>
+    <div class="header-actions">
+      <a class="link-btn sec disabled" id="btn-cf" href="#" target="_blank" rel="noopener">🎬 CreativeField</a>
+      <a class="link-btn sec disabled" id="btn-comfy" href="#" target="_blank" rel="noopener">⚙️ ComfyUI</a>
+      <button class="sec" onclick="rotateTor()">🔄 Novo IP Tor</button>
+      <button class="sec" onclick="syncNtfy(false)">📡 Sincronizar</button>
+      <button class="sec" onclick="toggleConfig()">⚙ Config</button>
     </div>
   </header>
 
-  <!-- Chat -->
-  <main id="chatBox" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 max-w-5xl w-full mx-auto">
-    <div class="glass rounded-2xl p-4 text-sm text-slate-300 leading-relaxed">
-      <strong class="text-indigo-400">LUX-Ω v10.0 A100 TITAN inicializada.</strong><br>
-      Selecione qualquer ferramenta abaixo ou peça naturalmente: <em>filme longo com roteiro, vídeo Wan 2.1, imagem FLUX.1, música MusicGen, clonagem de voz, troca de rosto, navegação profunda multi-diretórios ou programação do meu próprio código</em>.
+  <div id="config-panel">
+    <div class="field">
+      <label>Canal ntfy (Auto-Sync):</label>
+      <input type="text" id="cfg-channel" value="lux-omega-kauan-v55">
     </div>
-  </main>
-
-  <!-- Barra de Modos & Envio -->
-  <footer class="glass p-3 md:p-4">
-    <div class="max-w-5xl mx-auto space-y-2">
-      <div class="flex flex-wrap gap-1.5 text-xs">
-        <button onclick="setModo('auto', this)" class="mode-btn chip-active px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">✨ Auto IA</button>
-        <button onclick="setModo('filme_longo', this)" class="mode-btn px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">🎥 Filme Longo (Roteiro)</button>
-        <button onclick="setModo('video', this)" class="mode-btn px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">🎬 Vídeo Wan 2.1</button>
-        <button onclick="setModo('imagem', this)" class="mode-btn px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">🎨 Foto FLUX.1</button>
-        <button onclick="setModo('musica', this)" class="mode-btn px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">🎵 Música MusicGen</button>
-        <button onclick="setModo('clonar_voz', this)" class="mode-btn px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">🗣️ Voz Clonada</button>
-        <button onclick="setModo('deep_web', this)" class="mode-btn px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">🌐 Deep Web Multi-Dir</button>
-        <button onclick="setModo('auto_codigo', this)" class="mode-btn px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">⚡ Auto-Programar</button>
-      </div>
-
-      <div class="flex gap-2">
-        <textarea id="promptInput" rows="1" placeholder="Digite sua ideia de filme longo, música, imagem, pesquisa web ou evolução de código..."
-          class="flex-1 bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 resize-none"
-          onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); enviarMensagem();}"></textarea>
-        <button id="sendBtn" onclick="enviarMensagem()" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm text-white shadow-lg">Enviar</button>
-      </div>
+    <div class="field">
+      <label>API Unificada Colab (Porta 8000):</label>
+      <input type="url" id="cfg-api" placeholder="https://xxxx.trycloudflare.com">
     </div>
-  </footer>
-
-  <!-- Modal Face Swap -->
-  <div id="faceModal" class="hidden fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-    <div class="glass rounded-2xl max-w-md w-full p-5 space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="font-bold text-white">🎭 Troca de Rosto A100 (Foto ou Vídeo)</h2>
-        <button onclick="document.getElementById('faceModal').classList.add('hidden')" class="text-slate-400">✕</button>
-      </div>
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-300 mb-1">1. Foto do Rosto de Origem (salva no Drive):</label>
-          <input type="file" id="faceSrcInput" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
-        </div>
-        <div>
-          <label class="block text-slate-300 mb-1">2. Foto ou Vídeo MP4 Alvo (opcional):</label>
-          <input type="file" id="faceTgtInput" accept="image/*,video/*" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" />
-        </div>
-      </div>
-      <button onclick="executarFaceSwap()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm text-white">Executar Face Swap na A100</button>
+    <div class="field">
+      <label>URL CreativeField (Opcional):</label>
+      <input type="url" id="cfg-cf" placeholder="https://xxxx.trycloudflare.com">
+    </div>
+    <div class="field">
+      <label>URL ComfyUI (Opcional):</label>
+      <input type="url" id="cfg-comfy" placeholder="https://xxxx.trycloudflare.com">
+    </div>
+    <div class="field">
+      <label>Chave API Gemini (Opcional / Fallback):</label>
+      <input type="password" id="cfg-gemini" placeholder="AIza...">
+    </div>
+    <div class="field" style="justify-content: flex-end;">
+      <button onclick="saveConfig()">💾 Salvar & Testar Conexão</button>
     </div>
   </div>
 
-  <!-- Modal Consciência A100 -->
-  <div id="conscienciaModal" class="hidden fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-    <div class="glass rounded-2xl max-w-2xl w-full p-5 space-y-4 max-h-[85vh] overflow-y-auto">
-      <div class="flex justify-between items-center">
-        <h2 class="font-bold text-emerald-300">🧬 Consciência, Telemetria A100 & Cache Drive</h2>
-        <button onclick="document.getElementById('conscienciaModal').classList.add('hidden')" class="text-slate-400">✕</button>
-      </div>
-      <pre id="conscienciaContent" class="text-xs bg-slate-950 p-4 rounded-xl border border-slate-800 overflow-x-auto text-slate-300">Carregando...</pre>
+  <div class="mode-bar" id="mode-bar">
+    <button class="mode-tab active" data-mode="iceberg_search">🧊 Iceberg Search (.onion + Web)</button>
+    <button class="mode-tab" data-mode="osint_inspect">🧅 Inspecionar URL (.onion / .i2p)</button>
+    <button class="mode-tab" data-mode="iceberg_agent">🕵️ Agente OSINT</button>
+    <button class="mode-tab" data-mode="chat">💬 Chat IA (Qwen 27B)</button>
+    <button class="mode-tab" data-mode="imagem">🎨 Imagem HD</button>
+    <button class="mode-tab" data-mode="voice_clone">🎙️ Clonar Voz</button>
+    <button class="mode-tab" data-mode="whisper">🎧 Transcrever Áudio</button>
+  </div>
+
+  <div id="extra-bar">
+    <label id="lbl-render-js" style="display:none; align-items:center; gap:6px; cursor:pointer;">
+      <input type="checkbox" id="opt-render-js" style="width:auto;"> Renderizar JavaScript (Playwright Headless)
+    </label>
+    <div id="voice-inputs" style="display:none; gap:8px; flex-wrap:wrap; width:100%; align-items:center;">
+      <input type="text" id="voice-url" placeholder="URL do vídeo/áudio de referência (YouTube/MP4/MP3)..." style="max-width:340px;">
+      <input type="file" id="voice-file" accept="audio/*,video/*" style="max-width:250px;">
     </div>
   </div>
 
-  <!-- Modal Config -->
-  <div id="configModal" class="hidden fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-    <div class="glass rounded-2xl max-w-md w-full p-5 space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="font-bold text-white">⚙️ Conexão A100 TITAN</h2>
-        <button onclick="document.getElementById('configModal').classList.add('hidden')" class="text-slate-400">✕</button>
-      </div>
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-400 mb-1">URL do Túnel Cloudflare:</label>
-          <input type="text" id="backendUrlInput" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white" />
-        </div>
-        <div>
-          <label class="block text-slate-400 mb-1">Chave Gemini (Opcional — deixe vazio para 100% Open-Source A100):</label>
-          <input type="password" id="apiKeyInput" placeholder="Opcional" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white" />
-        </div>
-      </div>
-      <button onclick="salvarConfig()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm text-white">Salvar</button>
-    </div>
-  </div>
+  <div id="chat"></div>
+
+  <form onsubmit="handleSubmit(event)">
+    <input type="text" id="prompt" placeholder="Digite um termo para varrer Surface Web + Ahmia (.onion)..." autocomplete="off" required>
+    <button type="submit" id="send-btn">Executar</button>
+  </form>
 
   <script>
-    const CANAL_NTFY = "lux-omega-kauan-v55";
-    let BACKEND_URL = localStorage.getItem("lux_backend_url") || "";
-    let GEMINI_KEY = localStorage.getItem("lux_gemini_key") || "";
-    let MODO_ATUAL = "auto";
-    let VOZ_ATIVA = false;
+    const DEFAULT_API = "https://remarks-sole-practice-mark.trycloudflare.com";
+    const DEFAULT_CF = "https://mason-guardian-birthday-seekers.trycloudflare.com";
+    const DEFAULT_COMFY = "https://pine-basic-affiliate-tuning.trycloudflare.com";
 
-    document.getElementById("backendUrlInput").value = BACKEND_URL;
-    document.getElementById("apiKeyInput").value = GEMINI_KEY;
+    let currentMode = "iceberg_search";
 
-    function setModo(modo, btn) {
-      MODO_ATUAL = modo;
-      document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("chip-active"));
-      btn.classList.add("chip-active");
+    const state = {
+      channel: localStorage.getItem("lux_channel") || "lux-omega-kauan-v55",
+      api: localStorage.getItem("lux_api_url") || DEFAULT_API,
+      cf: localStorage.getItem("lux_cf_url") || DEFAULT_CF,
+      comfy: localStorage.getItem("lux_comfy_url") || DEFAULT_COMFY,
+      gemini: localStorage.getItem("lux_gemini_key") || ""
+    };
+
+    const placeholders = {
+      iceberg_search: "Digite um termo para varrer Surface Web + Ahmia (.onion)...",
+      osint_inspect: "Cole uma URL http://, https://, .onion ou .i2p para extrair...",
+      iceberg_agent: "Tema para o Agente OSINT pesquisar, raspar e resumir...",
+      chat: "Converse com o Qwen 3.8 27B na A100 (ou use: pesquisar iceberg ..., acessar onion ...)...",
+      imagem: "Descreva a imagem HD para gerar na GPU A100...",
+      voice_clone: "Digite o texto que a voz clonada deve falar...",
+      whisper: "Cole o link do vídeo/áudio para transcrever com Whisper..."
+    };
+
+    function initInputs() {
+      document.getElementById("cfg-channel").value = state.channel;
+      document.getElementById("cfg-api").value = state.api;
+      document.getElementById("cfg-cf").value = state.cf;
+      document.getElementById("cfg-comfy").value = state.comfy;
+      document.getElementById("cfg-gemini").value = state.gemini;
+      updateExternalLinks();
     }
 
-    function toggleTTS() {
-      VOZ_ATIVA = !VOZ_ATIVA;
-      const btn = document.getElementById("ttsToggle");
-      btn.textContent = VOZ_ATIVA ? "🔊 Voz: ON" : "🔇 Voz: OFF";
-      btn.classList.toggle("chip-active", VOZ_ATIVA);
+    function updateExternalLinks() {
+      const btnCf = document.getElementById("btn-cf");
+      const btnComfy = document.getElementById("btn-comfy");
+      if (state.cf) {
+        btnCf.href = state.cf;
+        btnCf.classList.remove("disabled");
+      } else {
+        btnCf.classList.add("disabled");
+      }
+      if (state.comfy) {
+        btnComfy.href = state.comfy;
+        btnComfy.classList.remove("disabled");
+      } else {
+        btnComfy.classList.add("disabled");
+      }
     }
 
-    function salvarConfig() {
-      BACKEND_URL = document.getElementById("backendUrlInput").value.trim().replace(/\/$/, "");
-      GEMINI_KEY = document.getElementById("apiKeyInput").value.trim();
-      localStorage.setItem("lux_backend_url", BACKEND_URL);
-      localStorage.setItem("lux_gemini_key", GEMINI_KEY);
-      document.getElementById("configModal").classList.add("hidden");
-      verificarStatus();
+    function toggleConfig() {
+      document.getElementById("config-panel").classList.toggle("open");
     }
 
-    async function descobrirTunelAutomatico() {
-      try {
-        const res = await fetch(`https://ntfy.sh/${CANAL_NTFY}/json?poll=1&since=12h`);
-        const text = await res.text();
-        const lines = text.trim().split("\n").filter(Boolean);
-        for (let i = lines.length - 1; i >= 0; i--) {
-          const obj = JSON.parse(lines[i]);
-          if (obj.message && obj.message.startsWith("https://")) {
-            BACKEND_URL = obj.message.trim().replace(/\/$/, "");
-            localStorage.setItem("lux_backend_url", BACKEND_URL);
-            document.getElementById("backendUrlInput").value = BACKEND_URL;
-            break;
-          }
-        }
-      } catch (e) {}
-      verificarStatus();
+    function saveConfig() {
+      state.channel = document.getElementById("cfg-channel").value.trim() || "lux-omega-kauan-v55";
+      state.api = document.getElementById("cfg-api").value.trim().replace(/\/$/, "");
+      state.cf = document.getElementById("cfg-cf").value.trim().replace(/\/$/, "");
+      state.comfy = document.getElementById("cfg-comfy").value.trim().replace(/\/$/, "");
+      state.gemini = document.getElementById("cfg-gemini").value.trim();
+
+      localStorage.setItem("lux_channel", state.channel);
+      localStorage.setItem("lux_api_url", state.api);
+      localStorage.setItem("lux_cf_url", state.cf);
+      localStorage.setItem("lux_comfy_url", state.comfy);
+      localStorage.setItem("lux_gemini_key", state.gemini);
+
+      updateExternalLinks();
+      document.getElementById("config-panel").classList.remove("open");
+      checkHealth(true);
     }
 
-    async function verificarStatus() {
-      const badge = document.getElementById("statusBadge");
-      const sub = document.getElementById("gpuSub");
-      if (!BACKEND_URL) {
-        badge.textContent = "Aguardando Colab A100";
+    document.querySelectorAll(".mode-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".mode-tab").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentMode = btn.dataset.mode;
+        document.getElementById("prompt").placeholder = placeholders[currentMode] || "Digite seu comando...";
+
+        const extra = document.getElementById("extra-bar");
+        const lblJs = document.getElementById("lbl-render-js");
+        const vInputs = document.getElementById("voice-inputs");
+
+        lblJs.style.display = currentMode === "osint_inspect" ? "flex" : "none";
+        vInputs.style.display = currentMode === "voice_clone" ? "flex" : "none";
+        extra.classList.toggle("open", currentMode === "osint_inspect" || currentMode === "voice_clone");
+      });
+    });
+
+    function addMsg(role, htmlContent = null, textContent = null) {
+      const chat = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.className = `msg ${role}`;
+      if (htmlContent !== null) {
+        div.innerHTML = htmlContent;
+      } else {
+        const pre = document.createElement("pre");
+        pre.textContent = textContent || "";
+        div.appendChild(pre);
+      }
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      return div;
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function checkHealth(announce = false) {
+      const bApi = document.getElementById("b-api");
+      const bGpu = document.getElementById("b-gpu");
+      const bTor = document.getElementById("b-tor");
+      const bI2p = document.getElementById("b-i2p");
+
+      if (!state.api) {
+        bApi.textContent = "● Sem URL API";
+        bApi.className = "badge off";
         return;
       }
-      try {
-        const r = await fetch(`${BACKEND_URL}/`);
-        const d = await r.json();
-        badge.textContent = `Online • ${d.gpu?.nome || "A100"}`;
-        badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-        sub.textContent = `VRAM Livre: ${d.gpu?.vram_livre_gb}GB / ${d.gpu?.vram_total_gb}GB | Cache Drive: ${d.cache_drive_gb}GB | Auto-Funções: ${d.funcoes_auto_programadas?.length || 0}`;
-      } catch (e) {
-        badge.textContent = "Reconectando...";
-      }
-    }
-
-    function adicionarMensagem(autor, texto, extras = {}) {
-      const box = document.getElementById("chatBox");
-      const div = document.createElement("div");
-      const isUser = autor === "user";
-      div.className = isUser
-        ? "ml-auto max-w-2xl bg-indigo-600/25 border border-indigo-500/30 rounded-2xl p-4 text-sm text-white"
-        : "glass rounded-2xl p-4 text-sm text-slate-200 space-y-3";
-
-      let html = `<div class="whitespace-pre-wrap leading-relaxed">${texto.replace(/</g, "&lt;")}</div>`;
-
-      if (extras.tools && extras.tools.length) {
-        html += `<div class="flex flex-wrap gap-1.5 pt-1">` +
-          extras.tools.map(t => `<span class="text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${t}</span>`).join("") +
-          `</div>`;
-      }
-      if (extras.image_file) {
-        const url = `${BACKEND_URL}/arquivo/${extras.image_file}`;
-        html += `<div class="pt-2"><img src="${url}" class="rounded-xl max-h-96 border border-slate-700 shadow-lg" /><a href="${url}" download class="inline-block mt-1.5 text-xs text-indigo-400 underline">⬇️ Baixar Imagem 1024×1024</a></div>`;
-      }
-      if (extras.video_file) {
-        const url = `${BACKEND_URL}/arquivo/${extras.video_file}`;
-        html += `<div class="pt-2"><video src="${url}" controls autoplay loop class="rounded-xl max-h-96 border border-slate-700 shadow-lg"></video><a href="${url}" download class="inline-block mt-1.5 text-xs text-indigo-400 underline">⬇️ Baixar Vídeo/Filme MP4</a></div>`;
-      }
-      if (extras.audio_file) {
-        const url = `${BACKEND_URL}/arquivo/${extras.audio_file}`;
-        html += `<div class="pt-2"><audio src="${url}" controls class="w-full"></audio><a href="${url}" download class="inline-block mt-1 text-xs text-indigo-400 underline">⬇️ Baixar Áudio/Música</a></div>`;
-      } else if (extras.audio_b64) {
-        html += `<audio controls autoplay src="data:audio/wav;base64,${extras.audio_b64}" class="w-full mt-2"></audio>`;
-      }
-
-      div.innerHTML = html;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    async function enviarMensagem() {
-      const inp = document.getElementById("promptInput");
-      const texto = inp.value.trim();
-      if (!texto || !BACKEND_URL) return;
-      inp.value = "";
-      adicionarMensagem("user", texto);
-
-      const btn = document.getElementById("sendBtn");
-      btn.disabled = true;
-      btn.textContent = "A100...";
 
       try {
-        const res = await fetch(`${BACKEND_URL}/executar`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: texto, api_key: GEMINI_KEY, mode: MODO_ATUAL, voice: VOZ_ATIVA })
-        });
+        const res = await fetch(`${state.api}/status`, { cache: "no-store" });
         const data = await res.json();
-        adicionarMensagem("assistant", data.reply || "Concluído.", data);
-        verificarStatus();
+        if (!res.ok || !data.ok) throw new Error("Status inválido");
+
+        bApi.textContent = "● API Colab Online";
+        bApi.className = "badge on";
+
+        bGpu.textContent = `GPU: ${data.gpu || "A100"} (${data.vram_total_gb || "?"} GB)`;
+        bGpu.className = "badge on";
+
+        bTor.textContent = data.tor_socks5_9050 ? "Tor 9050: ON" : "Tor 9050: OFF";
+        bTor.className = data.tor_socks5_9050 ? "badge on" : "badge off";
+
+        bI2p.textContent = data.i2pd_http_4444 ? "I2Pd 4444: ON" : "I2Pd 4444: INICIANDO";
+        bI2p.className = data.i2pd_http_4444 ? "badge on" : "badge warn";
+
+        if (announce) {
+          addMsg("ai", null, [
+            "✅ Conectado ao Colab!",
+            "API: " + state.api,
+            "GPU: " + data.gpu + " (" + data.vram_total_gb + " GB VRAM)",
+            "Tor SOCKS5 (9050): " + (data.tor_socks5_9050 ? "ONLINE" : "OFFLINE"),
+            "I2Pd HTTP (4444): " + (data.i2pd_http_4444 ? "ONLINE" : "INICIANDO")
+          ].join("\n"));
+        }
       } catch (e) {
-        adicionarMensagem("assistant", "Erro de comunicação com a instância A100.");
+        bApi.textContent = "● API Offline / Inacessível";
+        bApi.className = "badge off";
+        if (announce) {
+          addMsg("ai", null, `⚠️ Não foi possível alcançar ${state.api}/status (${e.message}). Verifique se a Célula 3 do Colab está rodando ou clique em Sincronizar.`);
+        }
+      }
+    }
+
+    async function syncNtfy(silent = true) {
+      if (!state.channel) return;
+      try {
+        const res = await fetch(`https://ntfy.sh/${encodeURIComponent(state.channel)}/json?poll=1&since=24h`);
+        const raw = await res.text();
+        let latestPayload = null;
+
+        for (const line of raw.split("\n")) {
+          if (!line.trim()) continue;
+          try {
+            const evt = JSON.parse(line);
+            const msgStr = evt.message || "";
+            if (msgStr.includes("trycloudflare.com")) {
+              try {
+                const parsed = JSON.parse(msgStr);
+                if (parsed.api) latestPayload = parsed;
+              } catch (_) {
+                const m = msgStr.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
+                if (m) latestPayload = { api: m[0] };
+              }
+            }
+          } catch (_) {}
+        }
+
+        if (latestPayload && latestPayload.api) {
+          state.api = latestPayload.api.replace(/\/$/, "");
+          localStorage.setItem("lux_api_url", state.api);
+          if (latestPayload.creativefield) {
+            state.cf = latestPayload.creativefield.replace(/\/$/, "");
+            localStorage.setItem("lux_cf_url", state.cf);
+          }
+          if (latestPayload.comfyui) {
+            state.comfy = latestPayload.comfyui.replace(/\/$/, "");
+            localStorage.setItem("lux_comfy_url", state.comfy);
+          }
+          initInputs();
+          await checkHealth(!silent);
+        } else {
+          await checkHealth(!silent);
+        }
+      } catch (e) {
+        await checkHealth(!silent);
+      }
+    }
+
+    async function rotateTor() {
+      if (!state.api) return alert("Configure a URL da API primeiro.");
+      const box = addMsg("ai", null, "🔄 Solicitando novo circuito Tor (SIGNAL NEWNYM)...");
+      try {
+        const res = await fetch(`${state.api}/iceberg/newnym`, { method: "POST" });
+        const data = await res.json();
+        box.querySelector("pre").textContent = data.ok
+          ? `✅ ${data.mensagem}`
+          : `❌ Falha ao rotacionar Tor: ${data.error}`;
+      } catch (e) {
+        box.querySelector("pre").textContent = `❌ Erro de rede: ${e.message}`;
+      }
+    }
+
+    window.inspectFromCard = function(url) {
+      document.querySelector('[data-mode="osint_inspect"]').click();
+      document.getElementById("prompt").value = url;
+      document.getElementById("send-btn").click();
+    };
+
+    function renderIcebergResults(box, data) {
+      const daemons = data.daemons || {};
+      const hits = data.results || [];
+      let html = `<div><strong>🧊 Busca Iceberg:</strong> ${escapeHtml(data.query)}</div>`;
+      html += `<div style="font-size:0.78rem; color:#9ca3af; margin:4px 0 8px;">Fontes: ${escapeHtml((data.sources_ok || []).join(", ") || "nenhuma")} | Tor 9050: ${daemons.tor_socks5_9050 ? "ON" : "OFF"} | I2Pd 4444: ${daemons.i2pd_http_4444 ? "ON" : "OFF"}</div>`;
+
+      if (!hits.length) {
+        html += `<div>Nenhum resultado retornado para esta consulta.</div>`;
+      } else {
+        hits.forEach(h => {
+          const isOnion = (h.url || "").includes(".onion") || (h.layer || "").includes("onion");
+          html += `
+            <div class="hit-card">
+              <span class="hit-layer ${isOnion ? "onion" : ""}">${escapeHtml(h.layer || "web")}</span>
+              <span style="font-size:0.72rem; color:#9ca3af;">${escapeHtml(h.engine || "")}</span>
+              <span class="hit-title">${escapeHtml(h.title || "Sem título")}</span>
+              <span class="hit-url">${escapeHtml(h.url || "")}</span>
+              <div class="hit-snippet">${escapeHtml(h.snippet || "")}</div>
+              ${h.url ? `<button class="sec" style="margin-top:6px; padding:4px 8px; font-size:0.75rem;" onclick="inspectFromCard('${escapeHtml(h.url)}')">🔍 Abrir / Inspecionar via Ponte</button>` : ""}
+            </div>
+          `;
+        });
+      }
+      box.innerHTML = html;
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById("prompt");
+      const btn = document.getElementById("send-btn");
+      let rawText = input.value.trim();
+      if (!rawText) return;
+
+      addMsg("user", null, rawText);
+      input.value = "";
+      btn.disabled = true;
+
+      let mode = currentMode;
+      let queryText = rawText;
+
+      const lower = rawText.toLowerCase();
+      if (lower.startsWith("pesquisar iceberg ") || lower.startsWith("buscar osint ")) {
+        mode = "iceberg_search";
+        queryText = rawText.replace(/^(pesquisar iceberg|buscar osint)\s+/i, "").trim();
+      } else if (lower.startsWith("inspecionar url ") || lower.startsWith("acessar onion ") || lower.startsWith("acessar i2p ")) {
+        mode = "osint_inspect";
+        queryText = rawText.replace(/^(inspecionar url|acessar onion|acessar i2p)\s+/i, "").trim();
+      } else if (lower.startsWith("gerar imagem ")) {
+        mode = "imagem";
+        queryText = rawText.replace(/^gerar imagem\s+/i, "").trim();
+      }
+
+      const box = addMsg("ai", null, "⏳ Executando no servidor LUX-Ω...");
+
+      try {
+        if (!state.api && !state.gemini) {
+          throw new Error("Nenhuma URL da API ou chave Gemini configurada.");
+        }
+
+        if (mode === "iceberg_search") {
+          const res = await fetch(`${state.api}/iceberg/search`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: queryText, max_results: 10 })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+          renderIcebergResults(box, data);
+
+        } else if (mode === "osint_inspect") {
+          const targetUrl = /^https?:\/\//i.test(queryText) ? queryText : `http://${queryText}`;
+          const renderJs = document.getElementById("opt-render-js").checked;
+          const res = await fetch(`${state.api}/iceberg/fetch`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: targetUrl, render_js: renderJs })
+          });
+          const data = await res.json();
+          if (!data.ok) {
+            box.querySelector("pre").textContent = `❌ Falha ao acessar [${data.layer || "rede"}]: ${data.error}`;
+          } else {
+            box.innerHTML = `
+              <div><span class="hit-layer ${(data.layer || "").includes("tor") ? "onion" : ""}">${escapeHtml(data.layer)}</span> <strong>Status ${data.status || 200}</strong></div>
+              <div class="hit-url">${escapeHtml(data.url)}</div>
+              <pre style="margin-top:8px; max-height:380px; overflow-y:auto; background:#0d0d16; padding:10px; border-radius:8px;">${escapeHtml(data.content || "(Sem texto extraído)")}</pre>
+            `;
+          }
+
+        } else if (mode === "iceberg_agent") {
+          box.querySelector("pre").textContent = "🕵️ Agente OSINT varrendo camadas e sintetizando relatório (pode levar ~40s)...";
+          const res = await fetch(`${state.api}/iceberg/investigate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: queryText, max_results: 6 })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+          box.querySelector("pre").textContent = `📊 RELATÓRIO OSINT (${data.fontes_coletadas} fontes lidas):\n\n${data.relatorio}`;
+
+        } else if (mode === "imagem") {
+          const res = await fetch(`${state.api}/executar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ modo: "imagem", prompt: queryText })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.url) throw new Error(data.detail || "Erro ao gerar imagem");
+          box.innerHTML = `
+            <div>🎨 Imagem gerada (${escapeHtml(data.resolucao || "1024x1024")}):</div>
+            <img class="media-out" src="${escapeHtml(data.url)}" alt="Imagem gerada">
+            <div style="margin-top:6px;"><a class="link-btn sec" href="${escapeHtml(data.url)}" target="_blank">⬇ Baixar PNG</a></div>
+          `;
+
+        } else if (mode === "voice_clone") {
+          const fd = new FormData();
+          fd.append("text", queryText);
+          fd.append("language", "pt");
+          const vUrl = document.getElementById("voice-url").value.trim();
+          const vFile = document.getElementById("voice-file").files[0];
+          if (vUrl) fd.append("media_url", vUrl);
+          if (vFile) fd.append("file", vFile);
+
+          const res = await fetch(`${state.api}/voice_clone`, { method: "POST", body: fd });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || "Erro na clonagem de voz");
+          box.innerHTML = `
+            <div>🎙️ Voz clonada com sucesso:</div>
+            <audio class="media-out" controls src="${escapeHtml(data.url)}"></audio>
+          `;
+
+        } else if (mode === "whisper") {
+          const res = await fetch(`${state.api}/executar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ modo: "whisper", params: { url: queryText } })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Erro na transcrição");
+          box.querySelector("pre").textContent = `🎧 Transcrição:\n\n${data.text || ""}`;
+
+        } else {
+          let answered = false;
+          if (state.api) {
+            try {
+              const res = await fetch(`${state.api}/executar`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ modo: "chat", prompt: queryText })
+              });
+              const data = await res.json();
+              if (res.ok && (data.resposta || data.response || data.reply)) {
+                box.querySelector("pre").textContent = data.resposta || data.response || data.reply;
+                answered = true;
+              } else if (!state.gemini) {
+                throw new Error(data.detail || `HTTP ${res.status}`);
+              }
+            } catch (err) {
+              if (!state.gemini) throw err;
+            }
+          }
+
+          if (!answered && state.gemini) {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.gemini}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: queryText }] }] })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || "Erro na API Gemini");
+            box.querySelector("pre").textContent = data.candidates[0].content.parts[0].text;
+          }
+        }
+      } catch (err) {
+        box.querySelector("pre").textContent = `❌ ${err.message}`;
       } finally {
         btn.disabled = false;
-        btn.textContent = "Enviar";
+        const chat = document.getElementById("chat");
+        chat.scrollTop = chat.scrollHeight;
       }
     }
 
-    async function enviarVoz(input) {
-      if (!input.files[0] || !BACKEND_URL) return;
-      const fd = new FormData();
-      fd.append("audio", input.files[0]);
-      adicionarMensagem("assistant", "🎙️ Enviando amostra vocal para calibração permanente no Google Drive...");
-      const r = await fetch(`${BACKEND_URL}/upload-voz`, { method: "POST", body: fd });
-      const d = await r.json();
-      adicionarMensagem("assistant", d.mensagem || "Voz clonada!");
-    }
-
-    function abrirModalRosto() { document.getElementById("faceModal").classList.remove("hidden"); }
-
-    async function executarFaceSwap() {
-      const src = document.getElementById("faceSrcInput").files[0];
-      const tgt = document.getElementById("faceTgtInput").files[0];
-      const fd = new FormData();
-      if (src) fd.append("rosto_origem", src);
-      if (tgt) fd.append("midia_alvo", tgt);
-      document.getElementById("faceModal").classList.add("hidden");
-      adicionarMensagem("assistant", "🎭 Processando troca de rosto na GPU A100...");
-      const r = await fetch(`${BACKEND_URL}/faceswap`, { method: "POST", body: fd });
-      const d = await r.json();
-      adicionarMensagem("assistant", d.reply, d);
-    }
-
-    async function abrirPainelConsciencia() {
-      document.getElementById("conscienciaModal").classList.remove("hidden");
-      const r = await fetch(`${BACKEND_URL}/memoria`);
-      const d = await r.json();
-      document.getElementById("conscienciaContent").textContent = JSON.stringify(d, null, 2);
-    }
-
-    descobrirTunelAutomatico();
-    setInterval(verificarStatus, 30000);
+    initInputs();
+    addMsg("ai", null, "🚀 LUX-Ω v5.5 pronta!\n• Selecione uma aba acima (Iceberg Search, Inspecionar .onion/.i2p, Agente OSINT, Chat Qwen 27B, Imagem HD, Clonar Voz, Transcrever) ou use os botões no topo para abrir o CreativeField e o ComfyUI.");
+    syncNtfy(true);
   </script>
 </body>
 </html>
