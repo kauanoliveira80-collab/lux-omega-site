@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LUX-Ω Omni v5 Turbo — Painel & Hub</title>
+  <title>LUX-Ω Omni — Painel GPU Colab</title>
   <style>
     :root {
       --bg: #08090e;
@@ -38,7 +38,7 @@
       gap: 10px;
     }
     .brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .brand h1 { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+    .brand h1 { font-size: 1.15rem; font-weight: 700; }
     .pill {
       font-size: 0.78rem;
       padding: 4px 10px;
@@ -177,7 +177,7 @@
 <body>
   <header>
     <div class="brand">
-      <h1>LUX-Ω v5 Turbo</h1>
+      <h1>LUX-Ω Colab GPU</h1>
       <span id="conn-pill" class="pill">● Sincronizando...</span>
       <span id="gpu-pill" class="pill">GPU: --</span>
       <span id="comfy-pill" class="pill">Comfy (8188): --</span>
@@ -195,16 +195,16 @@
       <input id="cfg-ntfy" type="text" value="lux-omega-kauan-v55" />
     </div>
     <div class="field">
-      <label>URL Pública da API (Porta 8000)</label>
-      <input id="cfg-api" type="url" placeholder="https://..." />
+      <label>URL Pública da API Colab</label>
+      <input id="cfg-api" type="url" placeholder="https://xxxx.trycloudflare.com" />
     </div>
     <div class="field">
-      <label>URL Pública ComfyUI (Porta 8188)</label>
-      <input id="cfg-comfy" type="url" placeholder="https://..." />
+      <label>URL Pública ComfyUI (8188)</label>
+      <input id="cfg-comfy" type="url" placeholder="https://xxxx.trycloudflare.com" />
     </div>
     <div class="field">
       <label>URL Pública CreativeField</label>
-      <input id="cfg-cf" type="url" placeholder="https://..." />
+      <input id="cfg-cf" type="url" placeholder="https://xxxx.trycloudflare.com" />
     </div>
     <div class="field" style="justify-content: flex-end;">
       <button onclick="saveConfig()">Salvar & Testar</button>
@@ -220,33 +220,32 @@
   </nav>
 
   <main>
-    <!-- ABA 1: CHAT & /RUN -->
     <section id="view-chat" class="view active">
       <div class="card">
         <div class="row-flex">
-          <select id="run-tool" style="max-width: 210px;" onchange="onToolChange()">
-            <option value="llm_gpu">LLM GPU (/run)</option>
-            <option value="image_gpu">Imagem GPU (/run)</option>
-            <option value="video_gpu">Vídeo GPU Wan/LTX (/run)</option>
+          <select id="run-tool" style="max-width: 220px;" onchange="onToolChange()">
+            <option value="chat">Chat / LLM (/run)</option>
+            <option value="brain">Conselho / Brain (/api/brain)</option>
+            <option value="imagem">Imagem GPU (/run)</option>
+            <option value="video_gpu">Vídeo GPU Wan (/run)</option>
             <option value="tts">TTS Edge (/run)</option>
-            <option value="whisper">Whisper + RAG (/run)</option>
-            <option value="crawl4ai">Crawl4AI + RAG (/run)</option>
+            <option value="whisper">Whisper (/run)</option>
+            <option value="playwright">Playwright Web (/run)</option>
             <option value="python">Python Exec (/run)</option>
           </select>
-          <input id="run-extra" type="text" style="max-width: 280px;" placeholder="Modelo LLM / Engine / URL / Código..." />
-          <span id="last-job-label" style="font-size: 0.82rem; color: var(--muted);">Job: nenhum</span>
+          <input id="run-extra" type="text" style="max-width: 280px;" placeholder="URL / Código / Modo (fast ou council)..." />
+          <span id="last-job-label" style="font-size: 0.82rem; color: var(--muted);">Pronto</span>
         </div>
         <div id="chat-box" class="chat-box">
-          <div class="msg ai">Pronto. Clique em Sincronizar para puxar o link ativo do Colab no canal ntfy.sh.</div>
+          <div class="msg ai">Buscando URL ativa do Colab no canal ntfy.sh... Se já tiver a URL, abra Config ou cole direto.</div>
         </div>
         <form class="row-flex" onsubmit="submitRun(event)">
-          <input id="run-prompt" type="text" placeholder="Digite o prompt, texto TTS, URL ou instrução..." required style="flex: 1; min-width: 220px;" />
+          <input id="run-prompt" type="text" placeholder="Digite sua mensagem, prompt, URL ou código..." required style="flex: 1; min-width: 220px;" />
           <button id="run-send-btn" type="submit">Executar</button>
         </form>
       </div>
     </section>
 
-    <!-- ABA 2: DUBLAGEM / VOZ / ROSTO -->
     <section id="view-media" class="view">
       <div class="grid-2">
         <div class="card">
@@ -261,29 +260,23 @@
         </div>
 
         <div class="card">
-          <h3>🎙️ Clonagem de Voz (/voice_clone) & 🔄 Rosto (/face_swap)</h3>
-          <div class="field"><label>Texto para voz</label><input id="vc-text" type="text" placeholder="Olá, teste de voz..." /></div>
+          <h3>🎙️ Clonagem de Voz (/voice_clone)</h3>
+          <div class="field"><label>Texto para falar</label><input id="vc-text" type="text" placeholder="Olá, teste de clonagem de voz..." /></div>
           <div class="row-flex">
             <input id="vc-lang" type="text" value="pt" style="max-width: 90px;" />
-            <input id="vc-engine" type="text" value="xtts" style="max-width: 120px;" />
-            <button onclick="sendVoiceClone()">Gerar Voz</button>
+            <input id="vc-url" type="text" placeholder="URL de vídeo/áudio (opcional se anexar arquivo)" style="flex: 1;" />
           </div>
+          <div class="field"><label>Arquivo de áudio ou vídeo de referência</label><input id="vc-file" type="file" accept="audio/*,video/*" /></div>
+          <button onclick="sendVoiceClone()">Gerar Voz Clonada</button>
           <div id="vc-result"></div>
-          <hr style="border-color: var(--border); margin: 6px 0;" />
-          <div class="field"><label>Arquivo de mídia (imagem ou vídeo)</label><input id="fs-media" type="file" accept="image/*,video/*" /></div>
-          <div class="field"><label>Rosto de referência (opcional)</label><input id="fs-face" type="file" accept="image/*" /></div>
-          <div class="field"><label>Nome alvo (opcional)</label><input id="fs-target" type="text" placeholder="Nome do rosto..." /></div>
-          <button onclick="sendFaceSwap()">Enviar /face_swap</button>
-          <div id="fs-result"></div>
         </div>
       </div>
     </section>
 
-    <!-- ABA 3: COMFYUI -->
     <section id="view-comfy" class="view">
       <div class="card">
         <div class="row-flex">
-          <input id="comfy-url-input" type="url" placeholder="https://... (URL da porta 8188)" style="flex: 1;" />
+          <input id="comfy-url-input" type="url" placeholder="https://xxxx.trycloudflare.com (ComfyUI)" style="flex: 1;" />
           <button onclick="applyIframeUrl('comfy')">Carregar Painel</button>
           <a id="comfy-ext-link" class="btn-link secondary" href="#" target="_blank" rel="noopener">Abrir em nova aba ↗</a>
         </div>
@@ -291,11 +284,10 @@
       </div>
     </section>
 
-    <!-- ABA 4: CREATIVEFIELD -->
     <section id="view-cf" class="view">
       <div class="card">
         <div class="row-flex">
-          <input id="cf-url-input" type="url" placeholder="https://... (URL do CreativeField)" style="flex: 1;" />
+          <input id="cf-url-input" type="url" placeholder="https://xxxx.trycloudflare.com (CreativeField)" style="flex: 1;" />
           <button onclick="applyIframeUrl('cf')">Carregar Painel</button>
           <a id="cf-ext-link" class="btn-link secondary" href="#" target="_blank" rel="noopener">Abrir em nova aba ↗</a>
         </div>
@@ -303,12 +295,11 @@
       </div>
     </section>
 
-    <!-- ABA 5: STATUS & JOBS -->
     <section id="view-jobs" class="view">
       <div class="card">
         <div class="row-flex">
           <button onclick="refreshStatus()">Atualizar /status</button>
-          <input id="job-lookup-id" type="text" placeholder="ID do job (ex: a1b2c3d4)" style="max-width: 220px;" />
+          <input id="job-lookup-id" type="text" placeholder="ID do job (se houver)" style="max-width: 220px;" />
           <button class="secondary" onclick="lookupJob()">Consultar /jobs/{id}</button>
         </div>
         <div class="status-grid" id="status-cards"></div>
@@ -414,28 +405,35 @@
 
     function onToolChange() {
       const t = els.runTool.value;
-      if (t === 'llm_gpu') els.runExtra.placeholder = 'Modelo LLM (opcional, ex: Qwen/Qwen2.5-3B-Instruct)';
-      else if (t === 'image_gpu' || t === 'video_gpu') els.runExtra.placeholder = 'Engine (wan, ltx, sdxl_lightning, flux_schnell)';
-      else if (t === 'whisper' || t === 'crawl4ai') els.runExtra.placeholder = 'URL alvo';
-      else if (t === 'python') els.runExtra.placeholder = 'Código Python curto (opcional)';
+      if (t === 'brain') els.runExtra.placeholder = 'Modo: council ou fast';
+      else if (t === 'whisper' || t === 'playwright') els.runExtra.placeholder = 'URL alvo';
+      else if (t === 'python') els.runExtra.placeholder = 'Código Python (opcional)';
       else els.runExtra.placeholder = 'Parâmetro extra (opcional)';
     }
 
-    function extractUrlsFromPayload(rawStr) {
+    function parseNtfyLine(line) {
       const out = { api: null, comfy: null, cf: null };
       try {
-        const obj = JSON.parse(rawStr);
-        const msgStr = typeof obj.message === 'string' ? obj.message : rawStr;
+        const evt = JSON.parse(line);
+        const msg = typeof evt.message === 'string' ? evt.message : JSON.stringify(evt);
         try {
-          const parsedInner = JSON.parse(msgStr);
-          if (parsedInner.api_url) out.api = parsedInner.api_url;
-          if (parsedInner.comfy_url) out.comfy = parsedInner.comfy_url;
-          if (parsedInner.creativefield_url) out.cf = parsedInner.creativefield_url;
+          const obj = JSON.parse(msg);
+          if (obj.api) out.api = obj.api;
+          if (obj.api_url) out.api = obj.api_url;
+          if (obj.comfyui) out.comfy = obj.comfyui;
+          if (obj.comfy_url) out.comfy = obj.comfy_url;
+          if (obj.creativefield) out.cf = obj.creativefield;
+          if (obj.creativefield_url) out.cf = obj.creativefield_url;
+          if (obj.urls && typeof obj.urls === 'object') {
+            if (obj.urls.api) out.api = obj.urls.api;
+            if (obj.urls.comfyui) out.comfy = obj.urls.comfyui;
+            if (obj.urls.creativefield) out.cf = obj.urls.creativefield;
+          }
         } catch (_) {}
-        const allUrls = (rawStr + ' ' + msgStr).match(/https?:\/\/[^\s"'<>]+|http?:\/\/bore\.pub:\d+/g) || [];
-        if (!out.api && allUrls.length) out.api = allUrls[0];
-        if (!out.comfy && allUrls.length > 1) out.comfy = allUrls[1];
-        if (!out.cf && allUrls.length > 2) out.cf = allUrls[2];
+        const urls = (msg + ' ' + JSON.stringify(evt)).match(/https?:\/\/[a-zA-Z0-9.-]+\.trycloudflare\.com/g) || [];
+        if (!out.api && urls[0]) out.api = urls[0];
+        if (!out.comfy && urls[1]) out.comfy = urls[1];
+        if (!out.cf && urls[2]) out.cf = urls[2];
       } catch (_) {}
       return out;
     }
@@ -451,50 +449,105 @@
         for (const line of txt.split('
 ')) {
           if (!line.trim()) continue;
-          const u = extractUrlsFromPayload(line);
+          const u = parseNtfyLine(line);
           if (u.api) found.api = cleanUrl(u.api);
           if (u.comfy) found.comfy = cleanUrl(u.comfy);
           if (u.cf) found.cf = cleanUrl(u.cf);
         }
-        let changed = false;
-        if (found.api) { els.api.value = found.api; localStorage.setItem('lux_api_url', found.api); changed = true; }
-        if (found.comfy) { els.comfy.value = found.comfy; els.comfyUrlInput.value = found.comfy; localStorage.setItem('lux_comfy_url', found.comfy); changed = true; }
-        if (found.cf) { els.cf.value = found.cf; els.cfUrlInput.value = found.cf; localStorage.setItem('lux_cf_url', found.cf); changed = true; }
+        let updated = false;
+        if (found.api) { els.api.value = found.api; localStorage.setItem('lux_api_url', found.api); updated = true; }
+        if (found.comfy) { els.comfy.value = found.comfy; els.comfyUrlInput.value = found.comfy; localStorage.setItem('lux_comfy_url', found.comfy); updated = true; }
+        if (found.cf) { els.cf.value = found.cf; els.cfUrlInput.value = found.cf; localStorage.setItem('lux_cf_url', found.cf); updated = true; }
         syncExternalLinks();
         await refreshStatus();
         if (!silent) {
-          addMsg(changed ? `Sincronizado com sucesso:
-API: ${found.api || '(mantida)'}` : 'Nenhuma URL nova encontrada nas últimas 24h no canal ntfy.', 'ai');
+          addMsg(updated ? `Sincronizado:
+API: ${found.api || '(mantida)'}
+Comfy: ${found.comfy || '-'}
+CreativeField: ${found.cf || '-'}` : 'Nenhum link novo encontrado no ntfy nas últimas 24h.', 'ai');
         }
       } catch (e) {
         els.connPill.className = 'pill err';
-        els.connPill.textContent = '● Sem conexão';
-        if (!silent) addMsg(`Falha ao sincronizar ntfy: ${e.message}`, 'ai');
+        els.connPill.textContent = '● Falha ntfy';
+        if (!silent) addMsg(`Erro ao consultar ntfy: ${e.message}`, 'ai');
       }
+    }
+
+    function listenNtfyLive() {
+      const ch = (els.ntfy.value || 'lux-omega-kauan-v55').trim();
+      if (!ch) return;
+      try {
+        const es = new EventSource(`https://ntfy.sh/${encodeURIComponent(ch)}/sse`);
+        es.onmessage = (ev) => {
+          const u = parseNtfyLine(ev.data);
+          let changed = false;
+          if (u.api && cleanUrl(u.api) !== cleanUrl(els.api.value)) {
+            els.api.value = cleanUrl(u.api);
+            localStorage.setItem('lux_api_url', cleanUrl(u.api));
+            changed = true;
+          }
+          if (u.comfy) {
+            els.comfy.value = cleanUrl(u.comfy);
+            els.comfyUrlInput.value = cleanUrl(u.comfy);
+            localStorage.setItem('lux_comfy_url', cleanUrl(u.comfy));
+            changed = true;
+          }
+          if (u.cf) {
+            els.cf.value = cleanUrl(u.cf);
+            els.cfUrlInput.value = cleanUrl(u.cf);
+            localStorage.setItem('lux_cf_url', cleanUrl(u.cf));
+            changed = true;
+          }
+          if (changed) {
+            syncExternalLinks();
+            refreshStatus();
+            addMsg(`Nova URL recebida ao vivo do Colab:
+${cleanUrl(u.api || els.api.value)}`, 'ai');
+          }
+        };
+      } catch (_) {}
     }
 
     async function refreshStatus() {
       const apiBase = cleanUrl(els.api.value);
       if (!apiBase) {
         els.connPill.className = 'pill err';
-        els.connPill.textContent = '● API não configurada';
+        els.connPill.textContent = '● Sem URL da API';
         return;
       }
       try {
         const res = await fetch(`${apiBase}/status`);
         const data = await res.json();
         els.connPill.className = 'pill ok';
-        els.connPill.textContent = '● API Online';
-        els.gpuPill.textContent = `GPU: ${data.gpu_name || 'CPU'} (${data.free_vram_gb ?? '--'}/${data.total_vram_gb ?? '--'} GB)`;
-        els.comfyPill.textContent = `Comfy (8188): ${data.comfy_8188 ? 'ON' : 'OFF'}`;
+        els.connPill.textContent = '● GPU Online';
+        const gpuLabel = data.gpu || data.gpu_name || 'GPU';
+        const freeGb = data.vram_livre_gb ?? data.free_vram_gb ?? '--';
+        const totGb = data.vram_total_gb ?? data.total_vram_gb ?? '--';
+        els.gpuPill.textContent = `${gpuLabel} (${freeGb}/${totGb} GB)`;
+        const comfyOn = Boolean(data.comfyui || data.comfy_8188);
+        els.comfyPill.textContent = `Comfy (8188): ${comfyOn ? 'ON' : 'OFF'}`;
+
+        if (data.urls) {
+          if (data.urls.comfyui && !els.comfy.value) {
+            els.comfy.value = data.urls.comfyui;
+            els.comfyUrlInput.value = data.urls.comfyui;
+            localStorage.setItem('lux_comfy_url', data.urls.comfyui);
+          }
+          if (data.urls.creativefield && !els.cf.value) {
+            els.cf.value = data.urls.creativefield;
+            els.cfUrlInput.value = data.urls.creativefield;
+            localStorage.setItem('lux_cf_url', data.urls.creativefield);
+          }
+          syncExternalLinks();
+        }
+
         els.statusJson.textContent = JSON.stringify(data, null, 2);
         els.statusCards.innerHTML = [
-          ['GPU', data.gpu_name || 'CPU'],
-          ['VRAM Livre / Total', `${data.free_vram_gb ?? '--'} / ${data.total_vram_gb ?? '--'} GB`],
-          ['Modo A100', String(Boolean(data.is_a100))],
-          ['ComfyUI (8188)', data.comfy_8188 ? 'Ativo' : 'Inativo'],
-          ['Túnel', `${data.tunnel_provider || 'none'}`],
-          ['Pipeline Ativo', data.active_pipeline || 'nenhum'],
+          ['GPU', gpuLabel],
+          ['VRAM Livre / Total', `${freeGb} / ${totGb} GB`],
+          ['ComfyUI (8188)', comfyOn ? 'Ativo' : 'Inativo'],
+          ['CreativeField', data.creativefield ? 'Ativo' : 'Inativo'],
+          ['Modelos em VRAM', (data.modelos_residentes || []).join(', ') || 'nenhum'],
         ].map(([k, v]) => `<div class="kv"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
       } catch (e) {
         els.connPill.className = 'pill err';
@@ -505,45 +558,36 @@ API: ${found.api || '(mantida)'}` : 'Nenhuma URL nova encontrada nas últimas 24
 
     async function freeVram() {
       const apiBase = cleanUrl(els.api.value);
-      if (!apiBase) return alert('Configure a URL da API primeiro.');
-      const res = await fetch(`${apiBase}/free_vram`, { method: 'POST' });
+      if (!apiBase) return alert('Configure ou sincronize a URL da API primeiro.');
+      const res = await fetch(`${apiBase}/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modo: 'python', params: { code: 'import gc, torch; gc.collect(); torch.cuda.empty_cache(); print("VRAM liberada")' } })
+      });
       const data = await res.json();
-      addMsg(`VRAM atualizada:
-${JSON.stringify(data.gpu || data, null, 2)}`, 'ai');
+      addMsg(`VRAM: ${data.resultado || JSON.stringify(data)}`, 'ai');
       refreshStatus();
     }
 
-    async function pollJob(jobId, bubble) {
-      const apiBase = cleanUrl(els.api.value);
-      for (let i = 0; i < 180; i++) {
-        await new Promise(r => setTimeout(r, 1500));
-        const res = await fetch(`${apiBase}/jobs/${jobId}`);
-        const job = await res.json();
-        if (job.status === 'completed' || job.status === 'failed') {
-          return job;
-        }
-        bubble.textContent = `Job ${jobId} (${job.status || 'running'})...`;
-      }
-      return { ok: false, status: 'timeout', error: 'Tempo limite de espera no polling.' };
-    }
-
-    function renderMediaInto(container, apiBase, job) {
-      if (!job || !job.url) return;
-      const fullUrl = job.url.startsWith('http') ? job.url : `${apiBase}${job.url}`;
-      if (job.type === 'video') {
-        container.innerHTML = `<video class="media-preview" controls src="${fullUrl}"></video><div style="font-size:0.8rem;margin-top:4px;"><a href="${fullUrl}" target="_blank" style="color:var(--accent-2);">Abrir vídeo ↗</a></div>`;
-      } else if (job.type === 'audio') {
-        container.innerHTML = `<audio class="media-preview" controls src="${fullUrl}"></audio><div style="font-size:0.8rem;margin-top:4px;"><a href="${fullUrl}" target="_blank" style="color:var(--accent-2);">Baixar áudio ↗</a></div>`;
-      } else if (job.type === 'image') {
-        container.innerHTML = `<img class="media-preview" src="${fullUrl}" alt="Resultado" />`;
+    function renderMediaInto(container, data) {
+      const mediaUrl = data && data.url ? data.url : null;
+      if (!mediaUrl) return;
+      if (data.type === 'video' || mediaUrl.endsWith('.mp4')) {
+        container.innerHTML += `<video class="media-preview" controls src="${mediaUrl}"></video><div style="font-size:0.8rem;margin-top:4px;"><a href="${mediaUrl}" target="_blank" style="color:var(--accent-2);">Abrir vídeo ↗</a></div>`;
+      } else if (data.type === 'audio' || mediaUrl.endsWith('.mp3') || mediaUrl.endsWith('.wav')) {
+        container.innerHTML += `<audio class="media-preview" controls src="${mediaUrl}"></audio><div style="font-size:0.8rem;margin-top:4px;"><a href="${mediaUrl}" target="_blank" style="color:var(--accent-2);">Baixar áudio ↗</a></div>`;
+      } else if (data.type === 'image' || mediaUrl.endsWith('.png') || mediaUrl.endsWith('.jpg')) {
+        container.innerHTML += `<img class="media-preview" src="${mediaUrl}" alt="Resultado" />`;
       }
     }
 
     async function submitRun(e) {
       e.preventDefault();
       const apiBase = cleanUrl(els.api.value);
-      if (!apiBase) return alert('Configure ou sincronize a URL da API primeiro.');
-
+      if (!apiBase) {
+        toggleConfig();
+        return alert('Configure a URL pública da API do Colab ou clique em Sincronizar.');
+      }
       const tool = els.runTool.value;
       const prompt = els.runPrompt.value.trim();
       const extra = els.runExtra.value.trim();
@@ -552,28 +596,35 @@ ${JSON.stringify(data.gpu || data, null, 2)}`, 'ai');
       addMsg(`[${tool}] ${prompt}`, 'user');
       els.runPrompt.value = '';
       els.runSendBtn.disabled = true;
-      const bubble = addMsg('Enviando tarefa para /run...', 'ai');
-
-      const params = { prompt, text: prompt, url: extra || prompt };
-      if (tool === 'llm_gpu' && extra) params.model = extra;
-      if ((tool === 'image_gpu' || tool === 'video_gpu') && extra) params.engine = extra;
-      if (tool === 'python') params.code = extra || prompt;
+      const bubble = addMsg('Executando na GPU do Colab...', 'ai');
 
       try {
-        const res = await fetch(`${apiBase}/run`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tool, params }),
-        });
-        const queued = await res.json();
-        const jobId = queued.job_id;
-        els.lastJobLabel.textContent = `Job: ${jobId}`;
-        els.jobLookupId.value = jobId;
-        const finalJob = await pollJob(jobId, bubble);
-        bubble.textContent = finalJob.text || finalJob.stdout || finalJob.error || JSON.stringify(finalJob, null, 2);
-        renderMediaInto(bubble, apiBase, finalJob);
+        if (tool === 'brain') {
+          const res = await fetch(`${apiBase}/api/brain`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, mode: extra || 'council', unrestricted: false })
+          });
+          const data = await res.json();
+          bubble.textContent = data.response || JSON.stringify(data, null, 2);
+        } else {
+          const params = { url: extra || prompt };
+          if (tool === 'python') params.code = extra || prompt;
+          const res = await fetch(`${apiBase}/run`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ modo: tool, prompt, params })
+          });
+          const data = await res.json();
+          if (data.job_id) {
+            els.lastJobLabel.textContent = `Job: ${data.job_id}`;
+            els.jobLookupId.value = data.job_id;
+          }
+          bubble.textContent = data.resposta || data.text || data.resultado || data.stdout || data.error || JSON.stringify(data, null, 2);
+          renderMediaInto(bubble, data);
+        }
       } catch (err) {
-        bubble.textContent = `Erro: ${err.message}`;
+        bubble.textContent = `Falha de conexão com a API (${err.message}). Confira se o Colab está rodando e clique em Sincronizar.`;
       } finally {
         els.runSendBtn.disabled = false;
       }
@@ -593,11 +644,11 @@ ${JSON.stringify(data.gpu || data, null, 2)}`, 'ai');
       if (vRef) fd.append('voice_file', vRef);
 
       const targetDiv = document.getElementById('dub-result');
-      targetDiv.textContent = 'Processando /dub_video...';
+      targetDiv.textContent = 'Processando /dub_video na GPU...';
       const res = await fetch(`${apiBase}/dub_video`, { method: 'POST', body: fd });
       const data = await res.json();
       targetDiv.innerHTML = `<pre class="log-box">${JSON.stringify(data, null, 2)}</pre>`;
-      renderMediaInto(targetDiv, apiBase, data);
+      renderMediaInto(targetDiv, data);
     }
 
     async function sendVoiceClone() {
@@ -606,31 +657,17 @@ ${JSON.stringify(data.gpu || data, null, 2)}`, 'ai');
       const fd = new FormData();
       fd.append('text', document.getElementById('vc-text').value.trim());
       fd.append('language', document.getElementById('vc-lang').value.trim() || 'pt');
-      fd.append('engine', document.getElementById('vc-engine').value.trim() || 'xtts');
+      const vUrl = document.getElementById('vc-url').value.trim();
+      if (vUrl) fd.append('media_url', vUrl);
+      const vFile = document.getElementById('vc-file').files[0];
+      if (vFile) fd.append('file', vFile);
+
       const targetDiv = document.getElementById('vc-result');
-      targetDiv.textContent = 'Gerando voz...';
+      targetDiv.textContent = 'Gerando voz clonada...';
       const res = await fetch(`${apiBase}/voice_clone`, { method: 'POST', body: fd });
       const data = await res.json();
       targetDiv.innerHTML = `<pre class="log-box">${JSON.stringify(data, null, 2)}</pre>`;
-      renderMediaInto(targetDiv, apiBase, data);
-    }
-
-    async function sendFaceSwap() {
-      const apiBase = cleanUrl(els.api.value);
-      if (!apiBase) return alert('Configure a URL da API primeiro.');
-      const media = document.getElementById('fs-media').files[0];
-      if (!media) return alert('Selecione imagem ou vídeo.');
-      const fd = new FormData();
-      fd.append('media_file', media);
-      fd.append('target_name', document.getElementById('fs-target').value.trim());
-      const face = document.getElementById('fs-face').files[0];
-      if (face) fd.append('face_file', face);
-      const targetDiv = document.getElementById('fs-result');
-      targetDiv.textContent = 'Enviando /face_swap...';
-      const res = await fetch(`${apiBase}/face_swap`, { method: 'POST', body: fd });
-      const data = await res.json();
-      targetDiv.innerHTML = `<pre class="log-box">${JSON.stringify(data, null, 2)}</pre>`;
-      renderMediaInto(targetDiv, apiBase, data);
+      renderMediaInto(targetDiv, data);
     }
 
     async function lookupJob() {
@@ -644,6 +681,7 @@ ${JSON.stringify(data.gpu || data, null, 2)}`, 'ai');
 
     loadSaved();
     syncNtfy(true);
+    listenNtfyLive();
   </script>
 </body>
 </html>
