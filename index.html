@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LUX-Ω — Workspace, CreativeField & Colab</title>
+<title>LUX-Ω Omni v2 — Central Colab, CreativeField & ComfyUI</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -31,24 +31,16 @@
     flex-direction: column;
     overflow: hidden;
   }
-
   .topbar {
-    height: 58px;
-    padding: 0 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-shrink: 0;
+    height: 58px; padding: 0 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg); display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; flex-shrink: 0;
   }
   .topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .icon-btn {
-    width: 36px; height: 36px; border-radius: 50%;
-    border: none; background: transparent; color: var(--text);
-    display: inline-flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 18px;
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: transparent; color: var(--text); display: inline-flex;
+    align-items: center; justify-content: center; cursor: pointer; font-size: 18px;
   }
   .icon-btn:hover { background: var(--surface-2); }
   .logo-badge {
@@ -68,17 +60,10 @@
   .pill.err { background: var(--err-bg); border-color: #fad2cf; color: var(--err-text); }
 
   .workspace { flex: 1; display: flex; min-height: 0; overflow: hidden; }
-
   .sidebar {
-    width: 288px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 12px;
-    gap: 12px;
-    overflow-y: auto;
-    flex-shrink: 0;
+    width: 296px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 12px; gap: 12px;
+    overflow-y: auto; flex-shrink: 0;
   }
   .sidebar.collapsed { display: none; }
   .sb-section-title {
@@ -95,13 +80,8 @@
   .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 
   .card-box {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
   }
   .field-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; display: flex; flex-direction: column; gap: 4px; }
   input, select, textarea {
@@ -139,25 +119,14 @@
   .hero-greeting p { margin: 0; color: var(--muted); font-size: 0.94rem; }
 
   .shortcut-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;
   }
   .shortcut-tile {
-    text-align: left;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 12px 14px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    text-align: left; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 14px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 4px;
   }
-  .shortcut-tile:hover {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-  }
+  .shortcut-tile:hover { border-color: var(--accent); background: var(--accent-soft); }
   .shortcut-tile strong { font-size: 0.9rem; color: var(--text); }
   .shortcut-tile span { font-size: 0.78rem; color: var(--muted); }
 
@@ -169,8 +138,7 @@
     font-size: 0.94rem; white-space: pre-wrap;
   }
   .msg-ai {
-    align-self: stretch;
-    background: var(--surface); border: 1px solid var(--border-soft);
+    align-self: stretch; background: var(--surface); border: 1px solid var(--border-soft);
     border-radius: 16px; padding: 14px 16px; font-size: 0.92rem;
   }
   .msg-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
@@ -199,34 +167,22 @@
   .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 
   .embed-frame {
-    width: 100%;
-    flex: 1;
-    min-height: 460px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: var(--surface);
+    width: 100%; flex: 1; min-height: 460px; border: 1px solid var(--border);
+    border-radius: 14px; background: var(--surface);
   }
   .embed-bar {
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border-soft);
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
+    padding: 12px 20px; border-bottom: 1px solid var(--border-soft);
+    background: var(--surface); display: flex; align-items: center;
+    justify-content: space-between; gap: 10px; flex-wrap: wrap;
   }
 
   .composer-wrap {
-    border-top: 1px solid var(--border-soft);
-    background: var(--bg);
-    padding: 12px 20px 18px;
-    flex-shrink: 0;
+    border-top: 1px solid var(--border-soft); background: var(--bg);
+    padding: 12px 20px 18px; flex-shrink: 0;
   }
   .composer-box {
-    max-width: 860px; margin: 0 auto;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 24px; padding: 10px 14px;
+    max-width: 860px; margin: 0 auto; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 24px; padding: 10px 14px;
     display: flex; flex-direction: column; gap: 8px;
   }
   .composer-textarea {
@@ -248,7 +204,7 @@
     <div class="topbar-left">
       <button id="toggleSidebarBtn" class="icon-btn" type="button" title="Alternar menu">☰</button>
       <span class="logo-badge">Ω</span>
-      <span class="brand-title">LUX-Ω Colab & CreativeField</span>
+      <span class="brand-title">LUX-Ω Omni v2</span>
     </div>
     <div class="status-pills">
       <span id="apiPill" class="pill err">Colab: desconectado</span>
@@ -309,8 +265,8 @@
         <div class="stream-area">
           <div id="chatStream" class="stream-inner">
             <div class="hero-greeting">
-              <h1>LUX-Ω — Central Colab</h1>
-              <p>Use os atalhos abaixo para preencher ferramentas ou abrir CreativeField, ComfyUI, Dublagem, Voz, Face Swap e Vídeo GPU.</p>
+              <h1>LUX-Ω Omni v2</h1>
+              <p>Conecte seu notebook do Google Colab ou use os atalhos abaixo para navegar pelas ferramentas.</p>
             </div>
 
             <div class="shortcut-grid">
@@ -339,7 +295,7 @@
             <div class="composer-footer">
               <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; flex:1;">
                 <select id="chatTool" style="max-width:215px;">
-                  <option value="llm_gpu">LLM GPU (Qwen2.5-7B)</option>
+                  <option value="llm_gpu">LLM GPU</option>
                   <option value="whisper">Whisper + RAG (URL)</option>
                   <option value="crawl4ai">Crawl4AI + RAG (URL)</option>
                   <option value="tts">Edge TTS (pt-BR)</option>
@@ -542,9 +498,9 @@
 
 <script>
 (function () {
-  const KEY_API = "lux_omega_colab_url";
-  const KEY_CF = "lux_omega_cf_url";
-  const KEY_COMFY = "lux_omega_comfy_url";
+  const KEY_API = "lux_omega_v2_colab_url";
+  const KEY_CF = "lux_omega_v2_cf_url";
+  const KEY_COMFY = "lux_omega_v2_comfy_url";
   const mem = {};
 
   function readPref(key) {
