@@ -1,288 +1,285 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0a0a0f">
-  <title>LUX-Omega AI</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUX-Omega</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #0a0a0f;
-      color: #f4f4f8;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      width: 100%;
+      background: #0b0d14;
+      color: #f3f4f6;
       font-family: system-ui, -apple-system, sans-serif;
+    }
+    .app {
       display: flex;
       flex-direction: column;
       height: 100vh;
+      width: 100%;
+      position: relative;
+      z-index: 1;
     }
-    header {
-      background: #14141f;
-      border-bottom: 1px solid #26263a;
-      padding: 14px 20px;
+    .topbar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #141824;
+      border-bottom: 1px solid #262d42;
+      position: relative;
+      z-index: 10;
     }
-    header h1 { font-size: 1.2rem; color: #7c5cff; display: inline; }
-    .status { font-size: 0.8rem; color: #facc15; margin-left: 8px; }
-    .header-btns { display: flex; gap: 8px; }
+    .title-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .title-wrap h1 { font-size: 1.1rem; color: #a78bfa; }
+    #status-txt { font-size: 0.85rem; color: #facc15; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
     button {
-      background: #7c5cff;
-      color: #fff;
-      border: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background: #7c3aed;
+      color: #ffffff;
+      border: 1px solid #8b5cf6;
       border-radius: 8px;
-      padding: 8px 14px;
+      padding: 9px 14px;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
+      pointer-events: auto !important;
+      position: relative;
+      z-index: 20;
     }
-    button.secondary { background: #26263a; }
-    #config-panel {
-      background: #14141f;
-      border-bottom: 1px solid #26263a;
-      padding: 16px 20px;
+    button:hover { background: #6d28d9; }
+    button.sec { background: #1f2536; border-color: #333d58; }
+    button.sec:hover { background: #293147; }
+    #cfg-box {
       display: none;
-      flex-direction: column;
+      padding: 14px 16px;
+      background: #141824;
+      border-bottom: 1px solid #262d42;
+      position: relative;
+      z-index: 15;
+    }
+    #cfg-box.open { display: block; }
+    .cfg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 10px;
+      margin-bottom: 10px;
     }
-    label { font-size: 0.82rem; color: #a0a0b8; }
+    label { display: block; font-size: 0.78rem; color: #9ca3af; margin-bottom: 4px; }
     input {
-      background: #0a0a0f;
-      border: 1px solid #2e2e46;
-      color: #fff;
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 0.95rem;
       width: 100%;
+      padding: 10px 12px;
+      background: #0b0d14;
+      color: #ffffff;
+      border: 1px solid #333d58;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      pointer-events: auto !important;
     }
-    #chat {
+    #msgs {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
     }
     .msg {
-      max-width: 82%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      line-height: 1.5;
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      line-height: 1.45;
       white-space: pre-wrap;
-      word-wrap: break-word;
+      word-break: break-word;
+      font-size: 0.92rem;
     }
-    .user { background: #7c5cff; align-self: flex-end; }
-    .ai { background: #181826; border: 1px solid #26263a; align-self: flex-start; }
-    form {
-      background: #14141f;
-      border-top: 1px solid #26263a;
-      padding: 12px 16px;
+    .msg.u { background: #7c3aed; align-self: flex-end; }
+    .msg.a { background: #181d2c; border: 1px solid #262d42; align-self: flex-start; }
+    .composer {
       display: flex;
-      gap: 10px;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #141824;
+      border-top: 1px solid #262d42;
+      position: relative;
+      z-index: 10;
     }
+    #prompt-inp { flex: 1; }
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>LUX-Omega</h1>
-      <span class="status" id="mode-badge">● Sincronizando canal...</span>
+  <div class="app">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>LUX-Omega</h1>
+        <span id="status-txt">Aguardando sincronização</span>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="sec" id="btn-sync">Sincronizar</button>
+        <button type="button" class="sec" id="btn-cfg">Configurar</button>
+        <button type="button" class="sec" id="btn-test">Testar /health</button>
+      </div>
     </div>
-    <div class="header-btns">
-      <button class="secondary" onclick="syncNtfy()">Sincronizar</button>
-      <button class="secondary" onclick="toggleConfig()">Configurar</button>
+
+    <div id="cfg-box">
+      <div class="cfg-grid">
+        <div>
+          <label for="inp-ntfy">Canal ntfy.sh</label>
+          <input type="text" id="inp-ntfy" value="lux-omega-kauan-v55" />
+        </div>
+        <div>
+          <label for="inp-url">URL do Colab / Túnel</label>
+          <input type="url" id="inp-url" placeholder="https://xxxx.trycloudflare.com" />
+        </div>
+        <div>
+          <label for="inp-route">Rota</label>
+          <input type="text" id="inp-route" value="/executar" />
+        </div>
+      </div>
+      <button type="button" id="btn-save">Salvar</button>
     </div>
-  </header>
 
-  <div id="config-panel">
-    <label>Canal ntfy (sincronização automática do Colab):</label>
-    <input type="text" id="ntfy-channel" value="lux-omega-kauan-v55">
+    <div id="msgs">
+      <div class="msg a">Painel pronto. Clique em "Sincronizar" ou em "Configurar" para colar a URL do túnel.</div>
+    </div>
 
-    <label>Link do Google Colab (preenchido automaticamente pelo canal):</label>
-    <input type="url" id="colab-url" placeholder="https://xxxx.trycloudflare.com">
-
-    <label>Rota da API no Colab (ex: /executar ou /chat):</label>
-    <input type="text" id="colab-route" placeholder="/executar">
-
-    <label>Chave API do Gemini (reserva se o Colab estiver desligado):</label>
-    <input type="password" id="api-key" placeholder="AIza...">
-
-    <button onclick="saveConfig()">Salvar Conexão</button>
+    <div class="composer">
+      <input type="text" id="prompt-inp" placeholder="Digite sua mensagem e pressione Enviar..." />
+      <button type="button" id="btn-send">Enviar</button>
+    </div>
   </div>
-
-  <div id="chat">
-    <div class="msg ai">Buscando link ativo do Colab no canal lux-omega-kauan-v55...</div>
-  </div>
-
-  <form onsubmit="sendMessage(event)">
-    <input type="text" id="prompt" placeholder="Envie um comando para o LUX-Omega..." autocomplete="off" required>
-    <button type="submit" id="send-btn">Enviar</button>
-  </form>
 
   <script>
-    const ntfyInput = document.getElementById('ntfy-channel');
-    const colabInput = document.getElementById('colab-url');
-    const routeInput = document.getElementById('colab-route');
-    const keyInput = document.getElementById('api-key');
-    const badge = document.getElementById('mode-badge');
-    const chat = document.getElementById('chat');
+    (function () {
+      const elStatus = document.getElementById('status-txt');
+      const elCfgBox = document.getElementById('cfg-box');
+      const elNtfy = document.getElementById('inp-ntfy');
+      const elUrl = document.getElementById('inp-url');
+      const elRoute = document.getElementById('inp-route');
+      const elMsgs = document.getElementById('msgs');
+      const elPrompt = document.getElementById('prompt-inp');
 
-    ntfyInput.value = localStorage.getItem('lux_ntfy_channel') || 'lux-omega-kauan-v55';
-    colabInput.value = localStorage.getItem('lux_colab_url') || '';
-    routeInput.value = localStorage.getItem('lux_colab_route') || '/executar';
-    keyInput.value = localStorage.getItem('lux_api_key') || '';
+      elNtfy.value = localStorage.getItem('lux_ntfy') || 'lux-omega-kauan-v55';
+      elUrl.value = localStorage.getItem('lux_url') || '';
+      elRoute.value = localStorage.getItem('lux_route') || '/executar';
 
-    function updateBadge(statusText, color) {
-      if (statusText) {
-        badge.textContent = statusText;
-        badge.style.color = color;
-        return;
+      function logMsg(txt, role) {
+        const d = document.createElement('div');
+        d.className = 'msg ' + (role === 'u' ? 'u' : 'a');
+        d.textContent = txt;
+        elMsgs.appendChild(d);
+        elMsgs.scrollTop = elMsgs.scrollHeight;
+        return d;
       }
-      if (localStorage.getItem('lux_colab_url')) {
-        badge.textContent = '● Colab Sincronizado';
-        badge.style.color = '#4ade80';
-      } else if (localStorage.getItem('lux_api_key')) {
-        badge.textContent = '● Gemini API';
-        badge.style.color = '#60a5fa';
-      } else {
-        badge.textContent = '● Desconectado';
-        badge.style.color = '#f87171';
+
+      function refreshStatus() {
+        const u = (localStorage.getItem('lux_url') || '').trim();
+        elStatus.textContent = u ? ('Conectado: ' + u) : 'Sem URL configurada';
       }
-    }
 
-    function toggleConfig() {
-      const panel = document.getElementById('config-panel');
-      panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
-    }
+      document.getElementById('btn-cfg').addEventListener('click', function () {
+        elCfgBox.classList.toggle('open');
+      });
 
-    function saveConfig() {
-      localStorage.setItem('lux_ntfy_channel', ntfyInput.value.trim());
-      localStorage.setItem('lux_colab_url', colabInput.value.trim().replace(/\/$/, ''));
-      localStorage.setItem('lux_colab_route', routeInput.value.trim() || '/executar');
-      localStorage.setItem('lux_api_key', keyInput.value.trim());
-      updateBadge();
-      toggleConfig();
-      addMessage('Configurações salvas.', 'ai');
-    }
+      document.getElementById('btn-save').addEventListener('click', function () {
+        const cleanU = elUrl.value.trim().replace(/\/+$/, '');
+        const cleanR = (elRoute.value.trim() || '/executar');
+        localStorage.setItem('lux_ntfy', elNtfy.value.trim() || 'lux-omega-kauan-v55');
+        localStorage.setItem('lux_url', cleanU);
+        localStorage.setItem('lux_route', cleanR.startsWith('/') ? cleanR : '/' + cleanR);
+        elUrl.value = cleanU;
+        elCfgBox.classList.remove('open');
+        refreshStatus();
+        logMsg('Configuração salva.', 'a');
+      });
 
-    function addMessage(text, role) {
-      const div = document.createElement('div');
-      div.className = `msg ${role}`;
-      div.textContent = text;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-      return div;
-    }
-
-    function extractTunnelUrl(text) {
-      const matches = text.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/g);
-      return matches ? matches[matches.length - 1] : null;
-    }
-
-    async function syncNtfy(silent = false) {
-      const channel = (localStorage.getItem('lux_ntfy_channel') || 'lux-omega-kauan-v55').trim();
-      if (!channel) return;
-      updateBadge('● Sincronizando...', '#facc15');
-      try {
-        const res = await fetch(`https://ntfy.sh/${encodeURIComponent(channel)}/json?poll=1&since=24h`);
-        const raw = await res.text();
-        let latestUrl = null;
-        for (const line of raw.split('
+      document.getElementById('btn-sync').addEventListener('click', async function () {
+        const ch = (elNtfy.value.trim() || 'lux-omega-kauan-v55');
+        elStatus.textContent = 'Buscando no ntfy...';
+        try {
+          const r = await fetch('https://ntfy.sh/' + encodeURIComponent(ch) + '/json?poll=1&since=24h');
+          const txt = await r.text();
+          let found = null;
+          for (const line of txt.split('
 ')) {
-          if (!line.trim()) continue;
-          try {
-            const evt = JSON.parse(line);
-            const found = extractTunnelUrl(JSON.stringify(evt));
-            if (found) latestUrl = found;
-          } catch (_) {}
-        }
-        if (latestUrl) {
-          const prev = localStorage.getItem('lux_colab_url');
-          localStorage.setItem('lux_colab_url', latestUrl);
-          colabInput.value = latestUrl;
-          updateBadge();
-          if (!silent || prev !== latestUrl) {
-            addMessage(`Colab conectado automaticamente:
-${latestUrl}`, 'ai');
+            if (!line.trim()) continue;
+            const m = line.match(/https?:\/\/[a-zA-Z0-9.-]+\.(?:trycloudflare\.com|loca\.lt|ngrok-free\.app|ngrok\.io)|http:\/\/bore\.pub:\d+/g);
+            if (m && m.length) found = m[m.length - 1];
           }
-        } else {
-          updateBadge();
-          if (!silent) addMessage('Nenhum link novo encontrado no canal nas últimas 24h.', 'ai');
+          if (found) {
+            found = found.replace(/\/+$/, '');
+            localStorage.setItem('lux_url', found);
+            elUrl.value = found;
+            refreshStatus();
+            logMsg('URL encontrada: ' + found, 'a');
+          } else {
+            refreshStatus();
+            logMsg('Nenhuma URL encontrada no canal ' + ch + '.', 'a');
+          }
+        } catch (err) {
+          refreshStatus();
+          logMsg('Erro ao sincronizar: ' + err.message, 'a');
         }
-      } catch (e) {
-        updateBadge();
-        if (!silent) addMessage('Erro ao ler canal ntfy: ' + e.message, 'ai');
-      }
-    }
+      });
 
-    function listenNtfyLive() {
-      const channel = (localStorage.getItem('lux_ntfy_channel') || 'lux-omega-kauan-v55').trim();
-      if (!channel) return;
-      const es = new EventSource(`https://ntfy.sh/${encodeURIComponent(channel)}/sse`);
-      es.onmessage = (event) => {
-        const found = extractTunnelUrl(event.data);
-        if (found && found !== localStorage.getItem('lux_colab_url')) {
-          localStorage.setItem('lux_colab_url', found);
-          colabInput.value = found;
-          updateBadge();
-          addMessage(`Novo túnel do Colab detectado ao vivo:
-${found}`, 'ai');
+      document.getElementById('btn-test').addEventListener('click', async function () {
+        const u = (localStorage.getItem('lux_url') || elUrl.value || '').trim().replace(/\/+$/, '');
+        if (!u) {
+          logMsg('Informe ou sincronize uma URL primeiro.', 'a');
+          return;
         }
-      };
-    }
+        const b = logMsg('Testando ' + u + '/health ...', 'a');
+        try {
+          const r = await fetch(u + '/health');
+          const t = await r.text();
+          b.textContent = 'HTTP ' + r.status + ': ' + t;
+        } catch (err) {
+          b.textContent = 'Falha em /health: ' + err.message;
+        }
+      });
 
-    async function sendMessage(e) {
-      e.preventDefault();
-      const colabUrl = localStorage.getItem('lux_colab_url');
-      const route = localStorage.getItem('lux_colab_route') || '/executar';
-      const apiKey = localStorage.getItem('lux_api_key');
-
-      if (!colabUrl && !apiKey) {
-        toggleConfig();
-        return alert('Aguarde a sincronização ou configure o motor.');
-      }
-
-      const input = document.getElementById('prompt');
-      const btn = document.getElementById('send-btn');
-      const userText = input.value.trim();
-      if (!userText) return;
-
-      addMessage(userText, 'user');
-      input.value = '';
-      btn.disabled = true;
-      const loadingMsg = addMessage('Processando no LUX-Omega...', 'ai');
-
-      try {
-        if (colabUrl) {
-          const endpoint = route.startsWith('/') ? route : `/${route}`;
-          const res = await fetch(`${colabUrl}${endpoint}`, {
+      async function sendNow() {
+        const u = (localStorage.getItem('lux_url') || elUrl.value || '').trim().replace(/\/+$/, '');
+        const rawRoute = (localStorage.getItem('lux_route') || elRoute.value || '/executar').trim();
+        const route = rawRoute.startsWith('/') ? rawRoute : '/' + rawRoute;
+        const prompt = elPrompt.value.trim();
+        if (!prompt) return;
+        if (!u) {
+          logMsg('Configure ou sincronize a URL antes de enviar.', 'a');
+          return;
+        }
+        logMsg(prompt, 'u');
+        elPrompt.value = '';
+        const replyBox = logMsg('Enviando...', 'a');
+        try {
+          const r = await fetch(u + route, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: userText, message: userText, text: userText })
+            body: JSON.stringify({ prompt: prompt, message: prompt, text: prompt })
           });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
-          loadingMsg.textContent = data.reply || data.response || data.output || JSON.stringify(data, null, 2);
-        } else {
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: userText }] }] })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error?.message || 'Erro na API');
-          loadingMsg.textContent = data.candidates[0].content.parts[0].text;
+          const data = await r.json();
+          replyBox.textContent = data.reply || data.response || data.output || JSON.stringify(data, null, 2);
+        } catch (err) {
+          replyBox.textContent = 'Erro ao enviar: ' + err.message;
         }
-      } catch (err) {
-        loadingMsg.textContent = `Falha (${err.message}). Clique em "Sincronizar" no topo se o Colab reiniciou.`;
-      } finally {
-        btn.disabled = false;
       }
-    }
 
-    updateBadge();
-    syncNtfy(true);
-    listenNtfyLive();
+      document.getElementById('btn-send').addEventListener('click', sendNow);
+      elPrompt.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          sendNow();
+        }
+      });
+
+      refreshStatus();
+    })();
   </script>
 </body>
 </html>
