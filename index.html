@@ -2,33 +2,23 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <meta name="theme-color" content="#131314" />
-  <title>LUX-Ω</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUX-Ω Omni-Stack Console</title>
   <style>
     :root {
       --bg-main: #131314;
-      --bg-sidebar: #1e1f20;
-      --bg-surface: #1e1f20;
-      --bg-surface-hover: #282a2c;
-      --bg-surface-active: #333537;
-      --bg-pill-blue: #004a77;
-      --text-primary: #e3e3e3;
-      --text-secondary: #9aa0a6;
-      --text-muted: #747775;
-      --accent-blue: #a8c7fa;
-      --accent-blue-hover: #d3e3fd;
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-focus: rgba(168, 199, 250, 0.35);
-      --green: #81c995;
-      --amber: #fdd663;
-      --red: #f28b82;
-      --sidebar-w: 272px;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+      --bg-panel: #1e1f20;
+      --bg-card: #282a2c;
+      --bg-hover: #333537;
+      --text-main: #e3e3e3;
+      --text-muted: #9aa0a6;
+      --accent: #8ab4f8;
+      --accent-soft: rgba(138, 180, 248, 0.14);
+      --ok: #81c995;
+      --warn: #fdd663;
+      --err: #f28b82;
+      --border: #3c4043;
+      --radius: 16px;
     }
 
     * {
@@ -37,705 +27,358 @@
       padding: 0;
     }
 
-    html, body {
-      height: 100%;
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg-main);
-      color: var(--text-primary);
-      font-family: var(--font-sans);
-      font-size: 15px;
-      line-height: 1.6;
-      overflow: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* Scrollbar discreta estilo Gemini */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 99px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
-
-    .app-shell {
-      display: flex;
+      color: var(--text-main);
       height: 100vh;
-      width: 100vw;
-      position: relative;
+      display: flex;
+      overflow: hidden;
     }
 
-    /* ================= SIDEBAR ================= */
-    .sidebar {
-      width: var(--sidebar-w);
-      background: var(--bg-sidebar);
+    /* Sidebar */
+    aside {
+      width: 280px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      padding: 12px;
-      transition: margin-left 0.25s cubic-bezier(0.2, 0, 0, 1), transform 0.25s cubic-bezier(0.2, 0, 0, 1);
-      z-index: 40;
-      flex-shrink: 0;
-      border-right: 1px solid var(--border-subtle);
-    }
-
-    .sidebar.collapsed {
-      margin-left: calc(-1 * var(--sidebar-w));
-    }
-
-    .sb-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
-    .icon-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      font-size: 18px;
-    }
-
-    .icon-btn:hover {
-      background: var(--bg-surface-hover);
-      color: var(--text-primary);
-    }
-
-    .new-chat-btn {
-      display: flex;
-      align-items: center;
+      padding: 14px;
       gap: 10px;
-      width: 100%;
-      padding: 10px 16px;
-      border-radius: 99px;
-      border: none;
-      background: #282a2c;
-      color: var(--text-primary);
-      font-family: var(--font-sans);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s;
-      margin-bottom: 16px;
+      transition: transform 0.22s ease, width 0.22s ease;
+      z-index: 20;
     }
 
-    .new-chat-btn:hover {
-      background: #333537;
-    }
-
-    .sb-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-
-    .sb-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: var(--text-secondary);
-      padding: 8px 12px 6px;
-      text-transform: uppercase;
-    }
-
-    .sb-item {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      width: 100%;
-      padding: 9px 12px;
-      border-radius: 99px;
-      border: none;
-      background: transparent;
-      color: var(--text-primary);
-      font-family: var(--font-sans);
-      font-size: 13.5px;
-      text-align: left;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.15s, color 0.15s;
-      white-space: nowrap;
+    aside.collapsed {
+      width: 0;
+      padding: 0;
+      border-right: none;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
 
-    .sb-item:hover {
-      background: var(--bg-surface-hover);
-    }
-
-    .sb-item.active {
-      background: var(--bg-pill-blue);
-      color: var(--accent-blue-hover);
-      font-weight: 500;
-    }
-
-    .sb-item .ico {
-      font-size: 15px;
-      width: 20px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .sb-item .ext-tag {
-      margin-left: auto;
-      font-size: 11px;
-      color: var(--text-secondary);
-    }
-
-    .history-item {
+    .brand {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
-      padding: 7px 12px;
-      border-radius: 99px;
-      color: var(--text-secondary);
+      padding: 4px 6px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+    }
+
+    .btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
       font-size: 13px;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .history-item:hover {
-      background: var(--bg-surface-hover);
-      color: var(--text-primary);
-    }
-
-    .history-title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-    }
-
-    .sb-footer {
-      border-top: 1px solid var(--border-subtle);
-      padding-top: 10px;
-      margin-top: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .telemetry-mini {
-      padding: 8px 12px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.03);
-      font-size: 11.5px;
-      color: var(--text-secondary);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-top: 4px;
-    }
-
-    .tel-row {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 6px;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      text-decoration: none;
     }
 
-    /* ================= MAIN AREA ================= */
-    .main-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      min-width: 0;
-      position: relative;
+    .btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent);
     }
 
-    /* Top Header */
-    .topbar {
-      height: 60px;
-      padding: 0 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-shrink: 0;
+    .btn.primary {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
     }
 
-    .top-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .brand-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--text-primary);
-      letter-spacing: -0.01em;
-      padding: 6px 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .brand-title:hover {
-      background: var(--bg-surface-hover);
-    }
-
-    .model-badge {
+    .btn.small {
+      padding: 6px 9px;
       font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      background: var(--bg-surface);
-      padding: 3px 10px;
-      border-radius: 99px;
-      border: 1px solid var(--border-subtle);
     }
 
-    .top-right {
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .nav-item {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      border-color: rgba(138, 180, 248, 0.35);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 8px 2px;
+      letter-spacing: 0.6px;
+    }
+
+    /* Main Workspace */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    header {
+      height: 58px;
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-main);
+    }
+
+    .header-left, .header-right {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
     }
 
-    .status-pill {
+    .pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 11px;
-      border-radius: 99px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
       font-size: 12px;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-      font-family: var(--font-sans);
-    }
-
-    .status-pill:hover {
-      background: var(--bg-surface-hover);
-      color: var(--text-primary);
+      color: var(--text-muted);
     }
 
     .dot {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--text-muted);
     }
 
-    .dot.on { background: var(--green); box-shadow: 0 0 8px rgba(129, 201, 149, 0.5); }
-    .dot.warn { background: var(--amber); }
-    .dot.off { background: var(--red); }
+    .dot.ok { background: var(--ok); }
+    .dot.warn { background: var(--warn); }
+    .dot.err { background: var(--err); }
 
-    /* ================= CHAT STREAM ================= */
-    .chat-viewport {
+    /* Chat & Panels */
+    main {
       flex: 1;
       overflow-y: auto;
-      padding: 12px 20px 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 14px;
     }
 
-    .chat-container {
-      width: 100%;
-      max-width: 800px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      flex: 1;
+    .hero {
+      max-width: 820px;
+      margin: 24px auto 8px;
+      text-align: center;
     }
 
-    /* Welcome Hero (Estilo Gemini) */
-    .welcome-screen {
-      margin: auto 0;
-      padding: 24px 0 36px;
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-      animation: fadeIn 0.35s ease;
-    }
-
-    .hero-heading {
-      font-size: clamp(2rem, 4.5vw, 3.1rem);
-      font-weight: 500;
-      line-height: 1.18;
-      letter-spacing: -0.025em;
-    }
-
-    .gemini-gradient-text {
-      background: linear-gradient(78deg, #4285f4 0%, #9b72cb 35%, #d96570 70%, #f49c6a 100%);
+    .hero h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #8ab4f8, #c58af9, #81c995);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;
+      margin-bottom: 8px;
     }
 
-    .hero-sub {
-      color: var(--text-secondary);
-      font-size: clamp(1.2rem, 2.5vw, 1.65rem);
-      font-weight: 400;
-      margin-top: 4px;
+    .hero p {
+      color: var(--text-muted);
+      font-size: 14px;
     }
 
-    .suggestion-grid {
+    .suggestions {
+      max-width: 820px;
+      margin: 12px auto;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
     }
 
-    .sug-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 18px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 124px;
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
       cursor: pointer;
-      transition: background 0.18s, transform 0.18s, border-color 0.18s;
-      text-align: left;
-      color: var(--text-primary);
-      font-family: var(--font-sans);
+      transition: border-color 0.15s ease, transform 0.15s ease;
     }
 
-    .sug-card:hover {
-      background: var(--bg-surface-hover);
-      border-color: rgba(255, 255, 255, 0.16);
-      transform: translateY(-2px);
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
     }
 
-    .sug-card p {
-      font-size: 13.5px;
-      line-height: 1.45;
-      color: var(--text-primary);
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
     }
 
-    .sug-icon {
-      align-self: flex-end;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: var(--bg-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      margin-top: 12px;
+    .card-sub {
+      font-size: 12px;
+      color: var(--text-muted);
     }
 
-    /* Messages */
-    .msg-row {
-      display: flex;
-      gap: 14px;
+    .msg {
+      max-width: 860px;
       width: 100%;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .msg-row.user {
-      justify-content: flex-end;
-    }
-
-    .user-bubble {
-      background: #282a2c;
-      color: var(--text-primary);
-      padding: 12px 18px;
-      border-radius: 22px 22px 6px 22px;
-      max-width: 78%;
-      font-size: 15px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      line-height: 1.5;
+      font-size: 14px;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    .user-mode-tag {
-      display: inline-block;
+    .msg.user {
+      background: var(--bg-card);
+      align-self: flex-end;
+    }
+
+    .msg.assistant {
+      background: var(--bg-panel);
+    }
+
+    .msg-meta {
       font-size: 11px;
-      color: var(--accent-blue);
-      margin-bottom: 4px;
-      font-weight: 500;
-    }
-
-    .ai-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .ai-body {
-      flex: 1;
-      min-width: 0;
-      color: var(--text-primary);
-      font-size: 15px;
-      line-height: 1.68;
-    }
-
-    .ai-meta {
-      font-size: 11.5px;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       margin-bottom: 6px;
       display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .ai-content p { margin-bottom: 12px; }
-    .ai-content p:last-child { margin-bottom: 0; }
-    .ai-content ul, .ai-content ol { margin: 8px 0 12px 22px; }
-    .ai-content li { margin-bottom: 5px; }
-    .ai-content h1, .ai-content h2, .ai-content h3 {
-      font-weight: 600;
-      margin: 16px 0 8px;
-      color: #fff;
-    }
-    .ai-content code {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      background: #1e1f20;
-      padding: 2px 6px;
-      border-radius: 6px;
-      color: var(--accent-blue);
-    }
-    .ai-content pre {
-      background: #1e1f20;
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      padding: 14px;
-      overflow-x: auto;
-      margin: 12px 0;
-      position: relative;
-    }
-    .ai-content pre code {
-      background: transparent;
-      padding: 0;
-      color: #e3e3e3;
-      font-size: 13px;
-    }
-
-    .msg-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .act-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--text-secondary);
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 99px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .act-btn:hover {
-      background: var(--bg-surface-hover);
-      color: var(--text-primary);
-    }
-
-    /* Cards de Resultados Iceberg / Media */
-    .result-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .res-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      padding: 12px 15px;
-      transition: border-color 0.15s;
-    }
-
-    .res-card:hover {
-      border-color: rgba(168, 199, 250, 0.3);
-    }
-
-    .res-head {
-      display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-
-    .layer-badge {
-      font-size: 11px;
-      font-weight: 500;
-      padding: 2px 8px;
-      border-radius: 99px;
-    }
-
-    .layer-onion { background: rgba(155, 114, 203, 0.18); color: #d0bcff; }
-    .layer-surface { background: rgba(168, 199, 250, 0.15); color: var(--accent-blue); }
-
-    .res-title {
-      font-weight: 500;
-      color: var(--accent-blue);
-      text-decoration: none;
-      font-size: 14px;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .res-title:hover { text-decoration: underline; }
-
-    .res-url {
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      color: var(--text-secondary);
-      word-break: break-all;
-      margin-bottom: 6px;
-    }
-
-    .res-snip {
-      font-size: 13px;
-      color: #c4c7c5;
     }
 
     .media-box {
       margin-top: 10px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 16px;
-      padding: 12px;
-      display: inline-flex;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 100%;
-    }
-
-    .media-box img {
-      max-width: 100%;
-      max-height: 440px;
-      border-radius: 12px;
-      display: block;
-    }
-
-    .media-box audio {
-      width: 100%;
-      min-width: 280px;
-    }
-
-    /* ================= BOTTOM COMPOSER (ESTILO GEMINI) ================= */
-    .composer-wrap {
-      padding: 8px 20px 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: linear-gradient(to top, var(--bg-main) 82%, transparent);
-      flex-shrink: 0;
-    }
-
-    .mode-strip {
-      width: 100%;
-      max-width: 800px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      scrollbar-width: none;
-    }
-    .mode-strip::-webkit-scrollbar { display: none; }
-
-    .mode-chip {
-      padding: 6px 13px;
-      border-radius: 99px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-surface);
-      color: var(--text-secondary);
-      font-family: var(--font-sans);
-      font-size: 12.5px;
-      font-weight: 500;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .mode-chip:hover {
-      background: var(--bg-surface-hover);
-      color: var(--text-primary);
-    }
-
-    .mode-chip.active {
-      background: var(--bg-pill-blue);
-      border-color: rgba(168, 199, 250, 0.35);
-      color: var(--accent-blue-hover);
-    }
-
-    .prompt-pill {
-      width: 100%;
-      max-width: 800px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 28px;
-      padding: 10px 14px 10px 20px;
       display: flex;
       flex-direction: column;
       gap: 8px;
-      transition: border-color 0.2s, background 0.2s;
     }
 
-    .prompt-pill:focus-within {
-      border-color: var(--border-focus);
-      background: #222325;
+    .media-box audio, .media-box video, .media-box img {
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
     }
 
-    .extra-bar {
+    /* Config Drawer / Modal */
+    .drawer {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
       display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .drawer.open {
+      display: flex;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    input, select, textarea {
+      background: var(--bg-main);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Composer */
+    .composer-wrap {
+      border-top: 1px solid var(--border);
+      padding: 12px 16px 16px;
+      background: var(--bg-main);
+    }
+
+    .composer {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .composer-top {
+      display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       flex-wrap: wrap;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border-subtle);
     }
 
-    .extra-bar.visible {
+    .attachments {
+      display: none;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .attachments.visible {
       display: flex;
-    }
-
-    .mini-input, .mini-select {
-      background: var(--bg-main);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-primary);
-      border-radius: 99px;
-      padding: 5px 12px;
-      font-size: 12.5px;
-      font-family: var(--font-sans);
-      outline: none;
-    }
-
-    .mini-input { flex: 1; min-width: 160px; }
-
-    .file-pill {
-      background: var(--bg-surface-hover);
-      color: var(--accent-blue);
-      border-radius: 99px;
-      padding: 5px 12px;
-      font-size: 12.5px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
     }
 
     .input-row {
@@ -744,959 +387,567 @@
       gap: 10px;
     }
 
-    #promptInput {
+    textarea#promptInput {
       flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--text-primary);
-      font-family: var(--font-sans);
-      font-size: 15.5px;
-      line-height: 1.5;
       resize: none;
+      min-height: 44px;
       max-height: 180px;
-      min-height: 26px;
-      padding: 5px 0;
-      outline: none;
-    }
-
-    #promptInput::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .send-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
       border: none;
-      background: var(--accent-blue);
-      color: #062e6f;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: transform 0.15s, background 0.15s, opacity 0.15s;
-    }
-
-    .send-btn:hover {
-      background: var(--accent-blue-hover);
-      transform: scale(1.04);
-    }
-
-    .send-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .disclaimer {
-      font-size: 11.5px;
-      color: var(--text-secondary);
-      margin-top: 8px;
-      text-align: center;
-    }
-
-    /* ================= MODAL CONFIG ================= */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      padding: 16px;
-    }
-
-    .modal-backdrop.open { display: flex; }
-
-    .modal-card {
-      background: #1e1f20;
-      border: 1px solid var(--border-subtle);
-      border-radius: 24px;
-      width: 100%;
-      max-width: 500px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .modal-head h2 {
-      font-size: 18px;
-      font-weight: 500;
-    }
-
-    .field-grp {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .field-grp label {
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    .field-grp input {
-      background: #131314;
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 10px 14px;
-      color: var(--text-primary);
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      outline: none;
-    }
-
-    .field-grp input:focus {
-      border-color: var(--accent-blue);
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .btn-sec {
-      padding: 9px 18px;
-      border-radius: 99px;
-      border: 1px solid var(--border-subtle);
       background: transparent;
-      color: var(--text-primary);
-      cursor: pointer;
-      font-size: 13.5px;
+      padding: 8px 4px;
+      font-size: 14px;
     }
 
-    .btn-pri {
-      padding: 9px 20px;
-      border-radius: 99px;
-      border: none;
-      background: var(--accent-blue);
-      color: #062e6f;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 13.5px;
+    textarea#promptInput:focus {
+      outline: none;
     }
 
-    /* Sparkle Animation */
-    @keyframes pulseSparkle {
-      0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-      50% { transform: scale(1.18) rotate(18deg); opacity: 0.75; }
-    }
-    .spinning-sparkle {
-      animation: pulseSparkle 1.4s ease-in-out infinite;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Responsive Mobile */
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 35;
-    }
-
-    @media (max-width: 820px) {
-      .sidebar {
+    @media (max-width: 768px) {
+      aside {
         position: fixed;
         top: 0;
-        bottom: 0;
         left: 0;
-        margin-left: 0 !important;
+        bottom: 0;
+      }
+      aside.collapsed {
         transform: translateX(-100%);
+        width: 280px;
+        padding: 14px;
       }
-      .sidebar.mobile-open {
-        transform: translateX(0);
-      }
-      .sidebar-overlay.visible {
-        display: block;
-      }
-      .user-bubble { max-width: 88%; }
-      .model-badge { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <div class="sidebar-overlay" id="sbOverlay" onclick="toggleSidebar()"></div>
+  <aside id="sidebar">
+    <div class="brand">
+      <span>LUX-Ω Console</span>
+      <button class="btn small" id="newChatBtn" title="Nova conversa">+ Novo</button>
+    </div>
 
-    <!-- SIDEBAR ESQUERDA (ESTILO GEMINI) -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sb-top">
-        <button class="icon-btn" onclick="toggleSidebar()" title="Recolher menu">☰</button>
-        <span style="font-size:12px;color:var(--text-secondary);font-weight:500;">LUX-Ω v5.5</span>
+    <div class="section-label">Ferramentas do Colab</div>
+    <div class="nav-list" id="toolNav">
+      <button class="nav-item active" data-mode="llm_gpu">💬 Chat IA (LLM GPU)</button>
+      <button class="nav-item" data-mode="iceberg_search">🧊 Iceberg Search</button>
+      <button class="nav-item" data-mode="iceberg_fetch">🧅 Inspecionar .onion / .i2p</button>
+      <button class="nav-item" data-mode="video_gpu">🎬 Gerar Vídeo (GPU)</button>
+      <button class="nav-item" data-mode="voice_clone">🎙️ Clonar Voz (XTTS / F5)</button>
+      <button class="nav-item" data-mode="face_swap">🎭 Trocar Rosto (Face Swap)</button>
+      <button class="nav-item" data-mode="whisper">📝 Transcrever Áudio/URL</button>
+      <button class="nav-item" data-mode="crawl4ai">🕸️ Extrair Página (Crawl4AI)</button>
+      <button class="nav-item" data-mode="tts">🔊 Voz Rápida (Edge-TTS)</button>
+      <button class="nav-item" data-mode="python">🐍 Executar Python</button>
+    </div>
+
+    <div class="section-label">Estúdios Externos</div>
+    <a class="btn small" id="cfLinkBtn" href="#" target="_blank" rel="noopener noreferrer">🎬 Abrir CreativeField</a>
+    <a class="btn small" id="comfyLinkBtn" href="#" target="_blank" rel="noopener noreferrer">⚙️ Abrir ComfyUI</a>
+
+    <div class="section-label">Conexão</div>
+    <button class="btn small" id="toggleConfigBtn">⚙️ Túneis e Sincronização</button>
+  </aside>
+
+  <div class="workspace">
+    <header>
+      <div class="header-left">
+        <button class="btn small" id="menuBtn" title="Menu">☰</button>
+        <span class="pill" id="modeBadge">Modo: Chat IA (LLM GPU)</span>
       </div>
 
-      <button class="new-chat-btn" onclick="startNewChat()">
-        <span style="font-size:18px;line-height:1;">+</span>
-        <span>Nova conversa</span>
-      </button>
-
-      <div class="sb-scroll">
-        <div class="sb-label">Ferramentas</div>
-        <button class="sb-item active" data-mode="chat" onclick="setMode('chat')">
-          <span class="ico">💬</span><span>Chat IA (Qwen 27B)</span>
-        </button>
-        <button class="sb-item" data-mode="iceberg" onclick="setMode('iceberg')">
-          <span class="ico">🧊</span><span>Iceberg Search</span>
-        </button>
-        <button class="sb-item" data-mode="fetch" onclick="setMode('fetch')">
-          <span class="ico">🧅</span><span>Inspecionar .onion / .i2p</span>
-        </button>
-        <button class="sb-item" data-mode="osint" onclick="setMode('osint')">
-          <span class="ico">🕵️</span><span>Agente OSINT</span>
-        </button>
-        <button class="sb-item" data-mode="imagem" onclick="setMode('imagem')">
-          <span class="ico">🎨</span><span>Imagem HD</span>
-        </button>
-        <button class="sb-item" data-mode="voz" onclick="setMode('voz')">
-          <span class="ico">🎙️</span><span>Clonar Voz</span>
-        </button>
-        <button class="sb-item" data-mode="whisper" onclick="setMode('whisper')">
-          <span class="ico">🎧</span><span>Transcrever Áudio</span>
-        </button>
-
-        <div class="sb-label" style="margin-top:10px;">Estúdios Externos</div>
-        <a class="sb-item" id="linkCreative" href="https://mason-guardian-birthday-seekers.trycloudflare.com" target="_blank" rel="noopener">
-          <span class="ico">🎬</span><span>CreativeField</span><span class="ext-tag">↗</span>
-        </a>
-        <a class="sb-item" id="linkComfy" href="https://pine-basic-affiliate-tuning.trycloudflare.com" target="_blank" rel="noopener">
-          <span class="ico">⚙️</span><span>ComfyUI</span><span class="ext-tag">↗</span>
-        </a>
-
-        <div class="sb-label" style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
-          <span>Recentes</span>
-          <span style="cursor:pointer;font-size:10px;color:var(--text-muted);" onclick="clearHistory()">Limpar</span>
-        </div>
-        <div id="historyList"></div>
+      <div class="header-right">
+        <span class="pill" title="Status da API FastAPI"><span class="dot" id="dotApi"></span><span id="txtApi">API: pendente</span></span>
+        <span class="pill" title="Tor SOCKS5 9050"><span class="dot" id="dotTor"></span><span id="txtTor">Tor 9050</span></span>
+        <span class="pill" title="I2Pd HTTP 4444"><span class="dot" id="dotI2p"></span><span id="txtI2p">I2Pd 4444</span></span>
+        <button class="btn small primary" id="syncBtn">📡 Sincronizar</button>
+        <button class="btn small" id="newnymBtn">🔄 Novo IP</button>
       </div>
+    </header>
 
-      <div class="sb-footer">
-        <button class="sb-item" onclick="openSettings()">
-          <span class="ico">⚙️</span><span>Configurações e Túneis</span>
-        </button>
-        <div class="telemetry-mini">
-          <div class="tel-row">
-            <span>GPU Colab</span>
-            <span id="sbGpuText" style="color:var(--text-primary);font-weight:500;">Verificando...</span>
-          </div>
-          <div class="tel-row">
-            <span>Tor (9050) / I2Pd (4444)</span>
-            <span id="sbDaemonsText">— / —</span>
-          </div>
+    <main id="chatMain">
+      <div class="drawer" id="configDrawer">
+        <strong>Configuração de Túneis e Canal ntfy.sh</strong>
+        <div class="grid-2">
+          <label>
+            URL da API FastAPI (trycloudflare.com)
+            <input type="text" id="cfgApiUrl" placeholder="https://....trycloudflare.com" />
+          </label>
+          <label>
+            Canal de Sincronização (ntfy.sh)
+            <input type="text" id="cfgChannel" value="lux-omega-kauan-v55" />
+          </label>
+          <label>
+            URL do ComfyUI (opcional)
+            <input type="text" id="cfgComfyUrl" placeholder="https://....trycloudflare.com" />
+          </label>
+          <label>
+            URL do CreativeField (opcional)
+            <input type="text" id="cfgCfUrl" placeholder="https://....trycloudflare.com" />
+          </label>
         </div>
-      </div>
-    </aside>
-
-    <!-- ÁREA PRINCIPAL -->
-    <main class="main-area">
-      <header class="topbar">
-        <div class="top-left">
-          <button class="icon-btn" id="topMenuBtn" onclick="toggleSidebar()" title="Menu">☰</button>
-          <div class="brand-title" onclick="startNewChat()">
-            <span>LUX-Ω</span>
-            <span class="model-badge" id="topModelBadge">A100 • Qwen 27B</span>
-          </div>
-        </div>
-
-        <div class="top-right">
-          <button class="status-pill" onclick="openSettings()" title="Status da API Colab">
-            <span class="dot" id="dotApi"></span>
-            <span id="lblApi">Colab</span>
-          </button>
-          <button class="status-pill" onclick="checkStatus()" title="Daemon Tor SOCKS5">
-            <span class="dot" id="dotTor"></span>
-            <span>Tor</span>
-          </button>
-          <button class="status-pill" onclick="checkStatus()" title="Roteador I2Pd HTTP">
-            <span class="dot" id="dotI2p"></span>
-            <span>I2Pd</span>
-          </button>
-          <button class="status-pill" onclick="syncNtfy(true)" title="Sincronizar links do Colab">
-            <span>📡 Sincronizar</span>
-          </button>
-          <button class="status-pill" onclick="rotateTorIp()" title="Trocar circuito / IP de saída do Tor">
-            <span>🔄 Novo IP</span>
-          </button>
-        </div>
-      </header>
-
-      <!-- VIEWPORT DE MENSAGENS -->
-      <div class="chat-viewport" id="chatViewport">
-        <div class="chat-container" id="chatContainer">
-          <!-- Tela Inicial Estilo Gemini -->
-          <div class="welcome-screen" id="welcomeScreen">
-            <div>
-              <h1 class="hero-heading">
-                <span class="gemini-gradient-text">Olá, Kauan</span>
-              </h1>
-              <p class="hero-sub">Como posso ajudar você hoje?</p>
-            </div>
-
-            <div class="suggestion-grid">
-              <button class="sug-card" onclick="quickStart('chat', 'Explique como otimizar workflows Wan 2.2 na A100 para máxima fidelidade cinematográfica.')">
-                <p>Otimizar geração de vídeo Wan 2.2 na A100</p>
-                <div class="sug-icon">🎬</div>
-              </button>
-              <button class="sug-card" onclick="quickStart('iceberg', 'cybersecurity threat intelligence leaks')">
-                <p>Pesquisar simultaneamente na Surface Web e Darknet (.onion)</p>
-                <div class="sug-icon">🧊</div>
-              </button>
-              <button class="sug-card" onclick="quickStart('osint', 'Infraestrutura de redes descentralizadas Tor e I2P')">
-                <p>Gerar dossiê técnico com o Agente OSINT</p>
-                <div class="sug-icon">🕵️</div>
-              </button>
-              <button class="sug-card" onclick="quickStart('imagem', 'Cinematic cyberpunk Tokyo street at night, rain reflections, 35mm lens, photorealistic, 8k')">
-                <p>Criar imagem fotorrealista em 1024×1024 na GPU</p>
-                <div class="sug-icon">🎨</div>
-              </button>
-            </div>
-          </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn small primary" id="saveConfigBtn">💾 Salvar e Testar</button>
+          <button class="btn small" id="pullChannelBtn">📡 Buscar no Canal Agora</button>
         </div>
       </div>
 
-      <!-- COMPOSER INFERIOR FLUTUANTE -->
-      <div class="composer-wrap">
-        <div class="mode-strip" id="modeStrip">
-          <button class="mode-chip active" data-mode="chat" onclick="setMode('chat')">💬 Chat IA</button>
-          <button class="mode-chip" data-mode="iceberg" onclick="setMode('iceberg')">🧊 Iceberg Search</button>
-          <button class="mode-chip" data-mode="fetch" onclick="setMode('fetch')">🧅 URL .onion / .i2p</button>
-          <button class="mode-chip" data-mode="osint" onclick="setMode('osint')">🕵️ Agente OSINT</button>
-          <button class="mode-chip" data-mode="imagem" onclick="setMode('imagem')">🎨 Imagem HD</button>
-          <button class="mode-chip" data-mode="voz" onclick="setMode('voz')">🎙️ Clonar Voz</button>
-          <button class="mode-chip" data-mode="whisper" onclick="setMode('whisper')">🎧 Transcrever</button>
+      <div class="hero" id="heroBlock">
+        <h1>LUX-Ω Conectado ao Colab</h1>
+        <p>Pronto para operar com o backend FastAPI, ComfyUI, CreativeField e daemons Tor/I2Pd sincronizados pelo canal <code>lux-omega-kauan-v55</code>.</p>
+      </div>
+
+      <div class="suggestions" id="suggestionsBlock">
+        <div class="card" data-preset-mode="llm_gpu" data-preset-text="Resuma os principais pontos deste projeto e sugira próximos testes na GPU.">
+          <div class="card-title">💬 Chat na GPU</div>
+          <div class="card-sub">Envia o prompt para a rota /run (llm_gpu).</div>
         </div>
-
-        <div class="prompt-pill">
-          <!-- Barra extra para Clonar Voz -->
-          <div class="extra-bar" id="voiceExtraBar">
-            <label class="file-pill">
-              <span>📎 Áudio/Vídeo ref.</span>
-              <input type="file" id="voiceFileInput" accept="audio/*,video/*" style="display:none" onchange="updateFileLabel()" />
-            </label>
-            <span id="voiceFileName" style="font-size:12px;color:var(--text-secondary);">Nenhum arquivo</span>
-            <input type="text" class="mini-input" id="voiceUrlInput" placeholder="Ou cole link de áudio/vídeo de referência..." />
-            <select class="mini-select" id="voiceLangSelect">
-              <option value="pt">Português (PT)</option>
-              <option value="en">Inglês (EN)</option>
-              <option value="es">Espanhol (ES)</option>
-            </select>
-          </div>
-
-          <div class="input-row">
-            <textarea id="promptInput" rows="1" placeholder="Pergunte à LUX-Ω..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-            <button class="send-btn" id="sendBtn" onclick="sendRequest()" title="Enviar">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            </button>
-          </div>
+        <div class="card" data-preset-mode="iceberg_search" data-preset-text="open source video generation models comfyui">
+          <div class="card-title">🧊 Busca Iceberg</div>
+          <div class="card-sub">Consulta /iceberg/search no backend do Colab.</div>
         </div>
-
-        <div class="disclaimer" id="footerStatus">
-          LUX-Ω pode executar buscas na Surface, Tor (.onion) e I2P (.i2p) direto pela GPU A100 do Colab.
+        <div class="card" data-preset-mode="video_gpu" data-preset-text="Cinematic aerial shot of a coastal cliff at sunset, 4k">
+          <div class="card-title">🎬 Vídeo na GPU</div>
+          <div class="card-sub">Aciona /run com tool video_gpu.</div>
         </div>
       </div>
     </main>
-  </div>
 
-  <!-- MODAL DE CONFIGURAÇÕES -->
-  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeSettings()">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h2>Configurações e Túneis Colab</h2>
-        <button class="icon-btn" onclick="closeSettings()">✕</button>
-      </div>
+    <div class="composer-wrap">
+      <div class="composer">
+        <div class="composer-top">
+          <select id="modeSelect" style="width:auto; padding:6px 10px; font-size:12px;">
+            <option value="llm_gpu">💬 Chat IA (LLM GPU)</option>
+            <option value="iceberg_search">🧊 Iceberg Search</option>
+            <option value="iceberg_fetch">🧅 Inspecionar .onion / .i2p</option>
+            <option value="video_gpu">🎬 Gerar Vídeo (GPU)</option>
+            <option value="voice_clone">🎙️ Clonar Voz (XTTS / F5)</option>
+            <option value="face_swap">🎭 Trocar Rosto (Face Swap)</option>
+            <option value="whisper">📝 Transcrever Áudio/URL</option>
+            <option value="crawl4ai">🕸️ Extrair Página (Crawl4AI)</option>
+            <option value="tts">🔊 Voz Rápida (Edge-TTS)</option>
+            <option value="python">🐍 Executar Python</option>
+          </select>
 
-      <div class="field-grp">
-        <label>URL da API Unificada (Cloudflare Tunnel)</label>
-        <input type="text" id="cfgApiUrl" placeholder="https://xxxx.trycloudflare.com" />
-      </div>
+          <div id="extraOptions" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            <select id="langSelect" style="display:none; width:auto; padding:5px 8px; font-size:12px;">
+              <option value="pt">pt</option>
+              <option value="en">en</option>
+              <option value="es">es</option>
+            </select>
+            <select id="voiceEngineSelect" style="display:none; width:auto; padding:5px 8px; font-size:12px;">
+              <option value="xtts">xtts</option>
+              <option value="f5">f5</option>
+            </select>
+            <input type="text" id="targetNameInput" placeholder="Nome (Face Swap opcional)" style="display:none; width:190px; padding:5px 8px; font-size:12px;" />
+          </div>
+        </div>
 
-      <div class="field-grp">
-        <label>URL do CreativeField Studio</label>
-        <input type="text" id="cfgCfUrl" placeholder="https://xxxx.trycloudflare.com" />
-      </div>
+        <div class="attachments" id="attachmentsBar">
+          <label style="flex-direction:row; align-items:center; gap:6px; cursor:pointer;">
+            📎 Arquivo principal:
+            <input type="file" id="mainFileInput" style="max-width:220px;" />
+          </label>
+          <label id="faceFileLabel" style="display:none; flex-direction:row; align-items:center; gap:6px; cursor:pointer;">
+            🙂 Foto do rosto:
+            <input type="file" id="faceFileInput" accept="image/*" style="max-width:200px;" />
+          </label>
+        </div>
 
-      <div class="field-grp">
-        <label>URL do ComfyUI</label>
-        <input type="text" id="cfgComfyUrl" placeholder="https://xxxx.trycloudflare.com" />
-      </div>
-
-      <div class="field-grp">
-        <label>Canal de Sincronização (ntfy.sh)</label>
-        <input type="text" id="cfgChannel" value="lux-omega-kauan-v55" />
-      </div>
-
-      <div class="field-grp">
-        <label>Chave API Gemini (Opcional — fallback se o Colab estiver desligado)</label>
-        <input type="password" id="cfgGeminiKey" placeholder="AIzaSy..." />
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn-sec" onclick="closeSettings()">Cancelar</button>
-        <button class="btn-pri" onclick="saveSettings()">Salvar e Conectar</button>
+        <div class="input-row">
+          <textarea id="promptInput" placeholder="Digite sua mensagem, consulta, URL ou comando... (Enter envia, Shift+Enter quebra linha)"></textarea>
+          <button class="btn primary" id="sendBtn">Enviar</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    const DEFAULT_CONFIG = {
-      apiUrl: "https://remarks-sole-practice-mark.trycloudflare.com",
-      cfUrl: "https://mason-guardian-birthday-seekers.trycloudflare.com",
-      comfyUrl: "https://pine-basic-affiliate-tuning.trycloudflare.com",
-      channel: "lux-omega-kauan-v55",
-      geminiKey: ""
+    const STORAGE_KEY = "lux_omega_github_sync_v1";
+    const state = {
+      mode: "llm_gpu",
+      apiUrl: "",
+      comfyUrl: "",
+      cfUrl: "",
+      channel: "lux-omega-kauan-v55"
     };
 
-    const MODE_META = {
-      chat:    { label: "💬 Chat IA", placeholder: "Pergunte à LUX-Ω..." },
-      iceberg: { label: "🧊 Iceberg Search", placeholder: "Digite o termo para varrer Surface Web + Darknet (.onion)..." },
-      fetch:   { label: "🧅 Inspecionar URL", placeholder: "Cole um endereço .onion, .i2p ou https:// para extrair..." },
-      osint:   { label: "🕵️ Agente OSINT", placeholder: "Tema ou alvo para investigação profunda e dossiê automático..." },
-      imagem:  { label: "🎨 Imagem HD", placeholder: "Descreva a imagem que deseja gerar em 1024×1024..." },
-      voz:     { label: "🎙️ Clonar Voz", placeholder: "Digite o texto que será falado com a voz clonada..." },
-      whisper: { label: "🎧 Transcrever Áudio", placeholder: "Cole o link do vídeo/áudio para transcrever com Whisper..." }
+    const modeLabels = {
+      llm_gpu: "Chat IA (LLM GPU)",
+      iceberg_search: "Iceberg Search",
+      iceberg_fetch: "Inspecionar .onion / .i2p",
+      video_gpu: "Gerar Vídeo (GPU)",
+      voice_clone: "Clonar Voz (XTTS / F5)",
+      face_swap: "Trocar Rosto (Face Swap)",
+      whisper: "Transcrever Áudio/URL",
+      crawl4ai: "Extrair Página (Crawl4AI)",
+      tts: "Voz Rápida (Edge-TTS)",
+      python: "Executar Python"
     };
 
-    let state = {
-      mode: "chat",
-      config: { ...DEFAULT_CONFIG },
-      messages: [],
-      history: [],
-      busy: false
-    };
+    const $ = (id) => document.getElementById(id);
 
-    const SPARKLE_SVG = `
-      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-        <defs>
-          <linearGradient id="gemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#4285f4"/>
-            <stop offset="50%" stop-color="#9b72cb"/>
-            <stop offset="100%" stop-color="#d96570"/>
-          </linearGradient>
-        </defs>
-        <path d="M14 2C14 8.627 19.373 14 26 14C19.373 14 14 19.373 14 26C14 19.373 8.627 14 2 14C8.627 14 14 8.627 14 2Z" fill="url(#gemGrad)"/>
-      </svg>`;
-
-    function init() {
+    function loadState() {
       try {
-        const savedCfg = JSON.parse(localStorage.getItem("lux_gemini_cfg") || "null");
-        if (savedCfg) state.config = { ...DEFAULT_CONFIG, ...savedCfg };
-        state.history = JSON.parse(localStorage.getItem("lux_gemini_hist") || "[]");
-      } catch (e) {}
-
-      applyExternalLinks();
-      renderHistory();
-      syncNtfy(false);
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        if (saved.apiUrl) state.apiUrl = saved.apiUrl;
+        if (saved.comfyUrl) state.comfyUrl = saved.comfyUrl;
+        if (saved.cfUrl) state.cfUrl = saved.cfUrl;
+        if (saved.channel) state.channel = saved.channel;
+      } catch (_) {}
+      syncInputsFromState();
+      updateExternalLinks();
     }
 
-    function applyExternalLinks() {
-      const cf = document.getElementById("linkCreative");
-      const cm = document.getElementById("linkComfy");
-      if (cf && state.config.cfUrl) cf.href = state.config.cfUrl;
-      if (cm && state.config.comfyUrl) cm.href = state.config.comfyUrl;
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        apiUrl: state.apiUrl,
+        comfyUrl: state.comfyUrl,
+        cfUrl: state.cfUrl,
+        channel: state.channel
+      }));
+      updateExternalLinks();
     }
 
-    function toggleSidebar() {
-      const sb = document.getElementById("sidebar");
-      const ov = document.getElementById("sbOverlay");
-      if (window.innerWidth <= 820) {
-        sb.classList.toggle("mobile-open");
-        ov.classList.toggle("visible");
-      } else {
-        sb.classList.toggle("collapsed");
-      }
+    function syncInputsFromState() {
+      $("cfgApiUrl").value = state.apiUrl;
+      $("cfgComfyUrl").value = state.comfyUrl;
+      $("cfgCfUrl").value = state.cfUrl;
+      $("cfgChannel").value = state.channel;
     }
 
-    function setMode(mode) {
-      state.mode = mode;
-      document.querySelectorAll("[data-mode]").forEach(el => {
-        el.classList.toggle("active", el.dataset.mode === mode);
+    function updateExternalLinks() {
+      $("cfLinkBtn").href = state.cfUrl || "#";
+      $("comfyLinkBtn").href = state.comfyUrl || "#";
+    }
+
+    function cleanBaseUrl(u) {
+      return (u || "").trim().replace(/\/+$/, "");
+    }
+
+    function setMode(newMode) {
+      state.mode = newMode;
+      $("modeSelect").value = newMode;
+      $("modeBadge").textContent = "Modo: " + (modeLabels[newMode] || newMode);
+
+      document.querySelectorAll("#toolNav .nav-item").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.mode === newMode);
       });
-      const meta = MODE_META[mode] || MODE_META.chat;
-      const inp = document.getElementById("promptInput");
-      inp.placeholder = meta.placeholder;
-      document.getElementById("voiceExtraBar").classList.toggle("visible", mode === "voz");
 
-      if (window.innerWidth <= 820) {
-        document.getElementById("sidebar").classList.remove("mobile-open");
-        document.getElementById("sbOverlay").classList.remove("visible");
-      }
-      inp.focus();
+      const showVoiceOpts = newMode === "voice_clone";
+      const showFaceOpts = newMode === "face_swap";
+      const needsFile = showVoiceOpts || showFaceOpts;
+
+      $("langSelect").style.display = showVoiceOpts ? "inline-block" : "none";
+      $("voiceEngineSelect").style.display = showVoiceOpts ? "inline-block" : "none";
+      $("targetNameInput").style.display = showFaceOpts ? "inline-block" : "none";
+      $("faceFileLabel").style.display = showFaceOpts ? "inline-flex" : "none";
+      $("attachmentsBar").classList.toggle("visible", needsFile);
     }
 
-    function quickStart(mode, text) {
-      setMode(mode);
-      const inp = document.getElementById("promptInput");
-      inp.value = text;
-      autoResize(inp);
-      sendRequest();
-    }
+    function appendMessage(role, title, bodyText, mediaObj) {
+      $("heroBlock").style.display = "none";
+      $("suggestionsBlock").style.display = "none";
 
-    function startNewChat() {
-      state.messages = [];
-      const container = document.getElementById("chatContainer");
-      container.innerHTML = `
-        <div class="welcome-screen" id="welcomeScreen">
-          <div>
-            <h1 class="hero-heading"><span class="gemini-gradient-text">Olá, Kauan</span></h1>
-            <p class="hero-sub">Como posso ajudar você hoje?</p>
-          </div>
-          <div class="suggestion-grid">
-            <button class="sug-card" onclick="quickStart('chat', 'Explique como otimizar workflows Wan 2.2 na A100 para máxima fidelidade cinematográfica.')">
-              <p>Otimizar geração de vídeo Wan 2.2 na A100</p>
-              <div class="sug-icon">🎬</div>
-            </button>
-            <button class="sug-card" onclick="quickStart('iceberg', 'cybersecurity threat intelligence leaks')">
-              <p>Pesquisar simultaneamente na Surface Web e Darknet (.onion)</p>
-              <div class="sug-icon">🧊</div>
-            </button>
-            <button class="sug-card" onclick="quickStart('osint', 'Infraestrutura de redes descentralizadas Tor e I2P')">
-              <p>Gerar dossiê técnico com o Agente OSINT</p>
-              <div class="sug-icon">🕵️</div>
-            </button>
-            <button class="sug-card" onclick="quickStart('imagem', 'Cinematic cyberpunk Tokyo street at night, rain reflections, 35mm lens, photorealistic, 8k')">
-              <p>Criar imagem fotorrealista em 1024×1024 na GPU</p>
-              <div class="sug-icon">🎨</div>
-            </button>
-          </div>
-        </div>`;
-    }
+      const box = document.createElement("div");
+      box.className = "msg " + role;
 
-    function autoResize(el) {
-      el.style.height = "auto";
-      el.style.height = Math.min(el.scrollHeight, 180) + "px";
-    }
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      meta.innerHTML = `<span>${title}</span><span>${new Date().toLocaleTimeString()}</span>`;
+      box.appendChild(meta);
 
-    function handleKey(e) {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendRequest();
-      }
-    }
+      const p = document.createElement("div");
+      p.textContent = bodyText;
+      box.appendChild(p);
 
-    function updateFileLabel() {
-      const f = document.getElementById("voiceFileInput").files[0];
-      document.getElementById("voiceFileName").textContent = f ? f.name : "Nenhum arquivo";
-    }
-
-    async function syncNtfy(notify) {
-      const ch = (state.config.channel || "lux-omega-kauan-v55").trim();
-      try {
-        const res = await fetch(`https://ntfy.sh/${encodeURIComponent(ch)}/json?poll=1`, { cache: "no-store" });
-        const txt = await res.text();
-        const lines = txt.trim().split("\n").filter(Boolean);
-        for (let i = lines.length - 1; i >= 0; i--) {
-          const obj = JSON.parse(lines[i]);
-          if (obj.event === "message" && obj.message) {
-            const payload = JSON.parse(obj.message);
-            if (payload.api) state.config.apiUrl = payload.api.replace(/\/+$/, "");
-            if (payload.creativefield) state.config.cfUrl = payload.creativefield.replace(/\/+$/, "");
-            if (payload.comfyui) state.config.comfyUrl = payload.comfyui.replace(/\/+$/, "");
-            localStorage.setItem("lux_gemini_cfg", JSON.stringify(state.config));
-            applyExternalLinks();
-            break;
-          }
+      if (mediaObj && mediaObj.url) {
+        const mWrap = document.createElement("div");
+        mWrap.className = "media-box";
+        if (mediaObj.type === "audio") {
+          const aud = document.createElement("audio");
+          aud.controls = true;
+          aud.src = mediaObj.url;
+          mWrap.appendChild(aud);
+        } else if (mediaObj.type === "video") {
+          const vid = document.createElement("video");
+          vid.controls = true;
+          vid.src = mediaObj.url;
+          mWrap.appendChild(vid);
+        } else if (mediaObj.type === "image") {
+          const img = document.createElement("img");
+          img.src = mediaObj.url;
+          mWrap.appendChild(img);
         }
-      } catch (e) {}
-      await checkStatus(notify);
+        const link = document.createElement("a");
+        link.className = "btn small";
+        link.href = mediaObj.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "Abrir arquivo gerado";
+        mWrap.appendChild(link);
+        box.appendChild(mWrap);
+      }
+
+      $("chatMain").appendChild(box);
+      $("chatMain").scrollTop = $("chatMain").scrollHeight;
     }
 
-    async function checkStatus(notify = false) {
-      const api = (state.config.apiUrl || "").replace(/\/+$/, "");
-      const dotApi = document.getElementById("dotApi");
-      const dotTor = document.getElementById("dotTor");
-      const dotI2p = document.getElementById("dotI2p");
-      const lblApi = document.getElementById("lblApi");
+    function setDot(dotEl, status) {
+      dotEl.className = "dot " + (status || "");
+    }
 
-      if (!api) {
-        dotApi.className = "dot off";
-        lblApi.textContent = "Sem URL";
+    async function checkHealth() {
+      const base = cleanBaseUrl(state.apiUrl);
+      if (!base) {
+        setDot($("dotApi"), "warn");
+        $("txtApi").textContent = "API: sem URL";
         return;
       }
-
       try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 7000);
-        const r = await fetch(api + "/status", { signal: ctrl.signal });
-        clearTimeout(t);
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        const d = await r.json();
+        const res = await fetch(`${base}/status`, { cache: "no-store" });
+        const data = await res.json();
+        setDot($("dotApi"), data.ok ? "ok" : "err");
+        $("txtApi").textContent = data.ok ? `API: ON (${data.free_vram_gb ?? "?"} GB)` : "API: erro";
 
-        dotApi.className = "dot on";
-        lblApi.textContent = "Colab Online";
-        dotTor.className = d.tor_socks5_9050 ? "dot on" : "dot off";
-        dotI2p.className = d.i2pd_http_4444 ? "dot on" : "dot warn";
+        setDot($("dotTor"), data.tor_9050 ? "ok" : "warn");
+        $("txtTor").textContent = data.tor_9050 ? "Tor 9050: ON" : "Tor 9050: OFF";
 
-        const gpuShort = (d.gpu || "A100").replace("NVIDIA ", "").split("-")[0];
-        document.getElementById("topModelBadge").textContent = `${gpuShort} (${d.vram_total_gb || 40} GB) • Qwen 27B`;
-        document.getElementById("sbGpuText").textContent = `${gpuShort} • ${d.vram_total_gb || 40} GB`;
-        document.getElementById("sbDaemonsText").textContent =
-          `${d.tor_socks5_9050 ? "ON" : "OFF"} / ${d.i2pd_http_4444 ? "ON" : "INIT"}`;
+        setDot($("dotI2p"), data.i2pd_4444 ? "ok" : "warn");
+        $("txtI2p").textContent = data.i2pd_4444 ? "I2Pd 4444: ON" : "I2Pd 4444: OFF";
 
-        if (notify) {
-          document.getElementById("footerStatus").textContent =
-            `Sincronizado: ${api} | Tor: ${d.tor_socks5_9050 ? "ONLINE" : "OFF"} | I2Pd: ${d.i2pd_http_4444 ? "ONLINE" : "INICIANDO"}`;
+        if (data.comfy_url) state.comfyUrl = data.comfy_url;
+        if (data.creativefield_url) state.cfUrl = data.creativefield_url;
+        saveState();
+        syncInputsFromState();
+      } catch (_) {
+        setDot($("dotApi"), "err");
+        $("txtApi").textContent = "API: offline";
+      }
+    }
+
+    async function syncFromChannel() {
+      const ch = ($("cfgChannel").value || state.channel || "lux-omega-kauan-v55").trim();
+      state.channel = ch;
+      saveState();
+      $("txtApi").textContent = "Sincronizando...";
+      try {
+        const res = await fetch(`https://ntfy.sh/${encodeURIComponent(ch)}/json?poll=1&since=24h`);
+        const raw = await res.text();
+        const lines = raw.trim().split("
+").filter(Boolean);
+        let parsedPayload = null;
+
+        for (let i = lines.length - 1; i >= 0; i--) {
+          try {
+            const ev = JSON.parse(lines[i]);
+            if (ev.event !== "message" || !ev.message) continue;
+            const inner = JSON.parse(ev.message);
+            if (inner && inner.api_url) {
+              parsedPayload = inner;
+              break;
+            }
+          } catch (_) {}
         }
-      } catch (e) {
-        dotApi.className = "dot off";
-        lblApi.textContent = "Offline";
-        dotTor.className = "dot";
-        dotI2p.className = "dot";
-        document.getElementById("sbGpuText").textContent = "Desconectado";
-        if (notify) {
-          document.getElementById("footerStatus").textContent =
-            "Colab offline ou aguardando inicialização da Célula 3.";
+
+        if (parsedPayload && parsedPayload.api_url) {
+          state.apiUrl = cleanBaseUrl(parsedPayload.api_url);
+          if (parsedPayload.comfy_url) state.comfyUrl = cleanBaseUrl(parsedPayload.comfy_url);
+          if (parsedPayload.creativefield_url) state.cfUrl = cleanBaseUrl(parsedPayload.creativefield_url);
+          saveState();
+          syncInputsFromState();
+          appendMessage("assistant", "Sincronização ntfy.sh", `URLs recebidas do canal '${ch}':
+API: ${state.apiUrl}
+ComfyUI: ${state.comfyUrl || "-"}
+CreativeField: ${state.cfUrl || "-"}`);
+          await checkHealth();
+        } else {
+          appendMessage("assistant", "Sincronização ntfy.sh", `Nenhuma mensagem JSON com 'api_url' encontrada recentemente no canal '${ch}'.`);
         }
+      } catch (err) {
+        appendMessage("assistant", "Erro de Sincronização", String(err));
       }
     }
 
     async function rotateTorIp() {
-      const api = (state.config.apiUrl || "").replace(/\/+$/, "");
-      if (!api) return;
-      document.getElementById("footerStatus").textContent = "Solicitando novo circuito Tor (SIGNAL NEWNYM)...";
+      const base = cleanBaseUrl(state.apiUrl);
+      if (!base) return;
       try {
-        const r = await fetch(api + "/iceberg/newnym", { method: "POST" });
-        const d = await r.json();
-        document.getElementById("footerStatus").textContent = d.ok
-          ? "Novo circuito Tor ativo — IP de saída rotacionado."
-          : ("Falha ao rotacionar Tor: " + (d.error || "erro desconhecido"));
-      } catch (e) {
-        document.getElementById("footerStatus").textContent = "Não foi possível contatar o daemon Tor no Colab.";
-      }
-    }
-
-    function escapeHtml(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
-    function renderMarkdown(text) {
-      let safe = escapeHtml(text);
-      // Code blocks
-      safe = safe.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-        return `<pre><code>${code.trim()}</code></pre>`;
-      });
-      // Inline code
-      safe = safe.replace(/`([^`\n]+)`/g, "<code>$1</code>");
-      // Bold & Italic
-      safe = safe.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-      safe = safe.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
-      // Headings
-      safe = safe.replace(/^### (.+)$/gm, "<h3>$1</h3>");
-      safe = safe.replace(/^## (.+)$/gm, "<h2>$1</h2>");
-      safe = safe.replace(/^# (.+)$/gm, "<h1>$1</h1>");
-      // Lists
-      safe = safe.replace(/^\s*[-*]\s+(.+)$/gm, "<li>$1</li>");
-      safe = safe.replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
-      // Paragraphs
-      return safe.split(/\n{2,}/).map(block => {
-        if (block.startsWith("<pre>") || block.startsWith("<h") || block.startsWith("<ul>")) return block;
-        return `<p>${block.replace(/\n/g, "<br>")}</p>`;
-      }).join("");
-    }
-
-    function appendUserMessage(text, modeLabel) {
-      const welcome = document.getElementById("welcomeScreen");
-      if (welcome) welcome.remove();
-
-      const container = document.getElementById("chatContainer");
-      const row = document.createElement("div");
-      row.className = "msg-row user";
-      row.innerHTML = `
-        <div class="user-bubble">
-          <div class="user-mode-tag">${escapeHtml(modeLabel)}</div>
-          <div>${escapeHtml(text)}</div>
-        </div>`;
-      container.appendChild(row);
-      scrollToBottom();
-    }
-
-    function createAiPlaceholder(statusText) {
-      const container = document.getElementById("chatContainer");
-      const row = document.createElement("div");
-      row.className = "msg-row ai";
-      row.innerHTML = `
-        <div class="ai-avatar spinning-sparkle">${SPARKLE_SVG}</div>
-        <div class="ai-body">
-          <div class="ai-meta">${escapeHtml(statusText)}</div>
-          <div class="ai-content"><p style="color:var(--text-secondary);">Processando...</p></div>
-        </div>`;
-      container.appendChild(row);
-      scrollToBottom();
-      return row;
-    }
-
-    function scrollToBottom() {
-      const vp = document.getElementById("chatViewport");
-      vp.scrollTop = vp.scrollHeight;
-    }
-
-    async function sendRequest() {
-      if (state.busy) return;
-      const inp = document.getElementById("promptInput");
-      const prompt = inp.value.trim();
-      if (!prompt) return;
-
-      const mode = state.mode;
-      const meta = MODE_META[mode] || MODE_META.chat;
-      const api = (state.config.apiUrl || "").replace(/\/+$/, "");
-
-      inp.value = "";
-      autoResize(inp);
-      appendUserMessage(prompt, meta.label);
-      saveHistory(prompt, mode);
-
-      state.busy = true;
-      document.getElementById("sendBtn").disabled = true;
-      const placeholder = createAiPlaceholder(`${meta.label} • Executando na A100`);
-      const avatarEl = placeholder.querySelector(".ai-avatar");
-      const metaEl = placeholder.querySelector(".ai-meta");
-      const contentEl = placeholder.querySelector(".ai-content");
-
-      try {
-        if (!api) throw new Error("URL da API do Colab não configurada.");
-
-        if (mode === "iceberg") {
-          const r = await fetch(api + "/iceberg/search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: prompt, max_results: 12 })
-          });
-          const d = await r.json();
-          const hits = d.results || [];
-          metaEl.textContent = `Iceberg Search • ${hits.length} resultados (${(d.sources_ok || []).join(", ") || "Surface + Onion"})`;
-
-          if (!hits.length) {
-            contentEl.innerHTML = `<p>Nenhum resultado encontrado para <strong>${escapeHtml(prompt)}</strong>.</p>`;
-          } else {
-            contentEl.innerHTML = `<div class="result-cards">` + hits.map(h => {
-              const isOnion = h.layer === "onion" || (h.url && h.url.includes(".onion"));
-              return `
-                <div class="res-card">
-                  <div class="res-head">
-                    <span class="layer-badge ${isOnion ? "layer-onion" : "layer-surface"}">
-                      ${isOnion ? "🧅 Darknet (.onion)" : "🌐 Surface Web"} • ${escapeHtml(h.engine || "")}
-                    </span>
-                    ${h.url ? `<button class="act-btn" onclick="inspectFromCard('${escapeHtml(h.url)}')">🔍 Extrair conteúdo</button>` : ""}
-                  </div>
-                  <a class="res-title" href="${escapeHtml(h.url || "#")}" target="_blank" rel="noopener">${escapeHtml(h.title || h.url)}</a>
-                  <div class="res-url">${escapeHtml(h.url || "")}</div>
-                  <div class="res-snip">${escapeHtml(h.snippet || "")}</div>
-                </div>`;
-            }).join("") + `</div>`;
-          }
-        } else if (mode === "fetch") {
-          const r = await fetch(api + "/iceberg/fetch", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: prompt, render_js: false })
-          });
-          const d = await r.json();
-          if (!d.ok) throw new Error(d.error || "Falha ao acessar URL.");
-          metaEl.textContent = `Rota: ${d.layer} • HTTP ${d.status || 200}`;
-          contentEl.innerHTML = renderMarkdown(d.content || "Sem conteúdo textual extraído.");
-          appendCopyAction(contentEl, d.content || "");
-        } else if (mode === "osint") {
-          const r = await fetch(api + "/iceberg/investigate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: prompt, max_results: 10 })
-          });
-          const d = await r.json();
-          if (!d.ok) throw new Error(d.error || "Erro na investigação OSINT.");
-          metaEl.textContent = `Agente OSINT • ${d.fontes_coletadas || 0} fontes analisadas pelo Qwen 27B`;
-          const report = d.relatorio || d.report || "";
-          contentEl.innerHTML = renderMarkdown(report);
-          appendCopyAction(contentEl, report);
-        } else if (mode === "imagem") {
-          const r = await fetch(api + "/executar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ modo: "imagem", prompt })
-          });
-          const d = await r.json();
-          if (!d.ok || !d.url) throw new Error(d.error || "Falha ao gerar imagem.");
-          metaEl.textContent = `RealVisXL Lightning • ${d.resolucao || "1024×1024"}`;
-          contentEl.innerHTML = `
-            <div class="media-box">
-              <img src="${escapeHtml(d.url)}" alt="Imagem gerada" />
-              <div>
-                <a class="act-btn" href="${escapeHtml(d.url)}" download="lux_omega.png" target="_blank">⬇️ Baixar PNG</a>
-              </div>
-            </div>`;
-        } else if (mode === "voz") {
-          const fd = new FormData();
-          fd.append("text", prompt);
-          fd.append("language", document.getElementById("voiceLangSelect").value);
-          fd.append("media_url", document.getElementById("voiceUrlInput").value.trim());
-          const f = document.getElementById("voiceFileInput").files[0];
-          if (f) fd.append("file", f);
-
-          const r = await fetch(api + "/voice_clone", { method: "POST", body: fd });
-          const d = await r.json();
-          if (!d.ok || !d.url) throw new Error(d.error || "Falha na clonagem de voz.");
-          metaEl.textContent = "XTTS-v2 • Voz sintetizada na GPU";
-          contentEl.innerHTML = `
-            <div class="media-box">
-              <audio controls autoplay src="${escapeHtml(d.url)}"></audio>
-              <div>
-                <a class="act-btn" href="${escapeHtml(d.url)}" download="voz_clonada.wav" target="_blank">⬇️ Baixar WAV</a>
-              </div>
-            </div>`;
-        } else if (mode === "whisper") {
-          const r = await fetch(api + "/executar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ modo: "whisper", prompt, params: { url: prompt } })
-          });
-          const d = await r.json();
-          if (!d.ok) throw new Error(d.error || "Falha na transcrição.");
-          metaEl.textContent = "Whisper large-v3-turbo • Transcrição concluída";
-          contentEl.innerHTML = renderMarkdown(d.text || "");
-          appendCopyAction(contentEl, d.text || "");
-        } else {
-          // Modo Chat IA
-          let reply = "";
-          try {
-            const r = await fetch(api + "/executar", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ modo: "chat", prompt })
-            });
-            if (!r.ok) throw new Error("Colab HTTP " + r.status);
-            const d = await r.json();
-            reply = d.resposta || d.reply || d.response || "";
-            metaEl.textContent = "Qwen 3.8 27B • A100 Local";
-          } catch (colabErr) {
-            if (state.config.geminiKey) {
-              reply = await callGeminiFallback(prompt, state.config.geminiKey);
-              metaEl.textContent = "Gemini 2.5 Flash • Fallback Nuvem";
-            } else {
-              throw colabErr;
-            }
-          }
-          contentEl.innerHTML = renderMarkdown(reply);
-          appendCopyAction(contentEl, reply);
-        }
+        const res = await fetch(`${base}/iceberg/newnym`, { method: "POST" });
+        const data = await res.json();
+        appendMessage("assistant", "Circuito Tor", data.ok ? `Novo circuito solicitado: ${data.tor_signal || "OK"}` : `Falha: ${data.error}`);
       } catch (err) {
-        metaEl.textContent = "Aviso de execução";
-        contentEl.innerHTML = `<p style="color:var(--red);">Não foi possível concluir a solicitação: ${escapeHtml(err.message)}</p>
-          <p style="font-size:13px;color:var(--text-secondary);">Verifique se a Célula 3 está rodando no Google Colab e clique em <strong>📡 Sincronizar</strong> no topo.</p>`;
-      } finally {
-        avatarEl.classList.remove("spinning-sparkle");
-        state.busy = false;
-        document.getElementById("sendBtn").disabled = false;
-        scrollToBottom();
+        appendMessage("assistant", "Circuito Tor", String(err));
       }
     }
 
-    function inspectFromCard(url) {
-      setMode("fetch");
-      const inp = document.getElementById("promptInput");
-      inp.value = url;
-      sendRequest();
-    }
-
-    function appendCopyAction(container, rawText) {
-      if (!rawText) return;
-      const bar = document.createElement("div");
-      bar.className = "msg-actions";
-      const btn = document.createElement("button");
-      btn.className = "act-btn";
-      btn.textContent = "📋 Copiar texto";
-      btn.onclick = () => {
-        navigator.clipboard.writeText(rawText);
-        btn.textContent = "✓ Copiado";
-        setTimeout(() => { btn.textContent = "📋 Copiar texto"; }, 1800);
-      };
-      bar.appendChild(btn);
-      container.appendChild(bar);
-    }
-
-    async function callGeminiFallback(prompt, key) {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error.message);
-      return d.candidates?.[0]?.content?.parts?.[0]?.text || "Sem resposta.";
-    }
-
-    function saveHistory(title, mode) {
-      state.history.unshift({ title: title.slice(0, 48), mode, ts: Date.now() });
-      state.history = state.history.slice(0, 15);
-      localStorage.setItem("lux_gemini_hist", JSON.stringify(state.history));
-      renderHistory();
-    }
-
-    function renderHistory() {
-      const list = document.getElementById("historyList");
-      if (!state.history.length) {
-        list.innerHTML = `<div style="padding:8px 12px;font-size:12px;color:var(--text-muted);">Nenhuma atividade recente</div>`;
+    async function sendPrompt() {
+      const prompt = $("promptInput").value.trim();
+      const base = cleanBaseUrl(state.apiUrl);
+      if (!base) {
+        appendMessage("assistant", "Aviso", "Configure ou sincronize a URL da API FastAPI antes de enviar.");
+        $("configDrawer").classList.add("open");
         return;
       }
-      list.innerHTML = state.history.map(item => `
-        <div class="history-item" onclick="quickStart('${escapeHtml(item.mode)}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')">
-          <span class="history-title">${escapeHtml(item.title)}</span>
-        </div>`).join("");
+
+      const mode = state.mode;
+      const mainFile = $("mainFileInput").files[0];
+      const faceFile = $("faceFileInput").files[0];
+
+      if (!prompt && mode !== "face_swap") return;
+      if (mode === "face_swap" && !mainFile) {
+        appendMessage("assistant", "Face Swap", "Anexe o vídeo ou imagem base no campo 📎 Arquivo principal.");
+        return;
+      }
+
+      appendMessage("user", `Você (${modeLabels[mode] || mode})`, prompt || `[Arquivo: ${mainFile?.name || ""}]`);
+      $("promptInput").value = "";
+      $("sendBtn").disabled = true;
+
+      try {
+        if (mode === "voice_clone") {
+          const fd = new FormData();
+          fd.append("text", prompt);
+          fd.append("language", $("langSelect").value);
+          fd.append("engine", $("voiceEngineSelect").value);
+          fd.append("clean_bg", "1");
+          if (prompt.startsWith("http://") || prompt.startsWith("https://")) {
+            fd.append("media_url", prompt);
+          }
+          if (mainFile) fd.append("file", mainFile);
+
+          const res = await fetch(`${base}/voice_clone`, { method: "POST", body: fd });
+          const data = await res.json();
+          if (data.ok) {
+            appendMessage("assistant", "Clonagem de Voz", `Áudio gerado (${data.engine || mode}).`, { type: "audio", url: data.url });
+          } else {
+            appendMessage("assistant", "Clonagem de Voz", `Erro: ${data.error || "Falha"}`);
+          }
+          return;
+        }
+
+        if (mode === "face_swap") {
+          const fd = new FormData();
+          fd.append("target_name", prompt || $("targetNameInput").value.trim());
+          fd.append("media_file", mainFile);
+          if (faceFile) fd.append("face_file", faceFile);
+
+          const res = await fetch(`${base}/face_swap`, { method: "POST", body: fd });
+          const data = await res.json();
+          if (data.ok) {
+            appendMessage("assistant", "Face Swap", "Processamento concluído.", { type: data.type || "video", url: data.url });
+          } else {
+            appendMessage("assistant", "Face Swap", `Erro: ${data.error || "Falha"}`);
+          }
+          return;
+        }
+
+        if (mode === "iceberg_search") {
+          const res = await fetch(`${base}/iceberg/search`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: prompt })
+          });
+          const data = await res.json();
+          const listText = (data.results || []).map((r, i) => `${i + 1}. ${r.title}
+   ${r.url}`).join("
+");
+          appendMessage("assistant", "Iceberg Search", data.ok ? (listText || "Sem resultados.") : `Erro: ${data.error}`);
+          return;
+        }
+
+        if (mode === "iceberg_fetch") {
+          const res = await fetch(`${base}/iceberg/fetch`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: prompt })
+          });
+          const data = await res.json();
+          appendMessage("assistant", "Iceberg Fetch", data.ok ? `Título: ${data.title}
+Status: ${data.status_code}
+
+${data.text || ""}` : `Erro: ${data.error}`);
+          return;
+        }
+
+        // Rotas em /run: llm_gpu, video_gpu, whisper, crawl4ai, tts, python
+        const payloadMap = {
+          llm_gpu: { tool: "llm_gpu", params: { prompt } },
+          video_gpu: { tool: "video_gpu", params: { prompt, engine: "wan" } },
+          whisper: { tool: "whisper", params: { url: prompt } },
+          crawl4ai: { tool: "crawl4ai", params: { url: prompt } },
+          tts: { tool: "tts", params: { text: prompt } },
+          python: { tool: "python", params: { code: prompt } }
+        };
+
+        const body = payloadMap[mode] || { tool: "llm_gpu", params: { prompt } };
+        const res = await fetch(`${base}/run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+          appendMessage("assistant", modeLabels[mode], `Erro: ${data.error || data.stderr || "Falha na execução"}`);
+          return;
+        }
+
+        if (data.type === "video" || data.type === "audio" || data.type === "image") {
+          appendMessage("assistant", modeLabels[mode], "Mídia gerada com sucesso.", { type: data.type, url: data.url });
+        } else {
+          const outText = data.text || data.clean_text || data.stdout || JSON.stringify(data, null, 2);
+          appendMessage("assistant", modeLabels[mode], outText);
+        }
+      } catch (err) {
+        appendMessage("assistant", "Erro de Rede", String(err));
+      } finally {
+        $("sendBtn").disabled = false;
+      }
     }
 
-    function clearHistory() {
-      state.history = [];
-      localStorage.removeItem("lux_gemini_hist");
-      renderHistory();
-    }
+    $("menuBtn").addEventListener("click", () => $("sidebar").classList.toggle("collapsed"));
+    $("toggleConfigBtn").addEventListener("click", () => $("configDrawer").classList.toggle("open"));
+    $("modeSelect").addEventListener("change", (e) => setMode(e.target.value));
 
-    function openSettings() {
-      document.getElementById("cfgApiUrl").value = state.config.apiUrl || "";
-      document.getElementById("cfgCfUrl").value = state.config.cfUrl || "";
-      document.getElementById("cfgComfyUrl").value = state.config.comfyUrl || "";
-      document.getElementById("cfgChannel").value = state.config.channel || "lux-omega-kauan-v55";
-      document.getElementById("cfgGeminiKey").value = state.config.geminiKey || "";
-      document.getElementById("settingsModal").classList.add("open");
-    }
+    document.querySelectorAll("#toolNav .nav-item").forEach((btn) => {
+      btn.addEventListener("click", () => setMode(btn.dataset.mode));
+    });
 
-    function closeSettings() {
-      document.getElementById("settingsModal").classList.remove("open");
-    }
+    document.querySelectorAll("#suggestionsBlock .card").forEach((card) => {
+      card.addEventListener("click", () => {
+        setMode(card.dataset.presetMode);
+        $("promptInput").value = card.dataset.presetText;
+        $("promptInput").focus();
+      });
+    });
 
-    function saveSettings() {
-      state.config.apiUrl = document.getElementById("cfgApiUrl").value.trim().replace(/\/+$/, "");
-      state.config.cfUrl = document.getElementById("cfgCfUrl").value.trim().replace(/\/+$/, "");
-      state.config.comfyUrl = document.getElementById("cfgComfyUrl").value.trim().replace(/\/+$/, "");
-      state.config.channel = document.getElementById("cfgChannel").value.trim() || "lux-omega-kauan-v55";
-      state.config.geminiKey = document.getElementById("cfgGeminiKey").value.trim();
-      localStorage.setItem("lux_gemini_cfg", JSON.stringify(state.config));
-      applyExternalLinks();
-      closeSettings();
-      checkStatus(true);
-    }
+    $("saveConfigBtn").addEventListener("click", async () => {
+      state.apiUrl = cleanBaseUrl($("cfgApiUrl").value);
+      state.comfyUrl = cleanBaseUrl($("cfgComfyUrl").value);
+      state.cfUrl = cleanBaseUrl($("cfgCfUrl").value);
+      state.channel = ($("cfgChannel").value || "lux-omega-kauan-v55").trim();
+      saveState();
+      await checkHealth();
+    });
 
-    init();
+    $("pullChannelBtn").addEventListener("click", syncFromChannel);
+    $("syncBtn").addEventListener("click", syncFromChannel);
+    $("newnymBtn").addEventListener("click", rotateTorIp);
+    $("sendBtn").addEventListener("click", sendPrompt);
+
+    $("promptInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendPrompt();
+      }
+    });
+
+    $("newChatBtn").addEventListener("click", () => {
+      document.querySelectorAll("#chatMain .msg").forEach((m) => m.remove());
+      $("heroBlock").style.display = "block";
+      $("suggestionsBlock").style.display = "grid";
+    });
+
+    loadState();
+    checkHealth();
   </script>
 </body>
 </html>
