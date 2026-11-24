@@ -1,984 +1,649 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LUX-Ω Omni v2 — Central Colab, CreativeField & ComfyUI</title>
-<style>
-  :root {
-    --bg: #ffffff;
-    --surface: #f8f9fa;
-    --surface-2: #f1f3f4;
-    --border: #dadce0;
-    --border-soft: #e8eaed;
-    --text: #1f1f1f;
-    --muted: #5f6368;
-    --accent: #1a73e8;
-    --accent-soft: #e8f0fe;
-    --accent-hover: #1765cc;
-    --ok-bg: #e6f4ea;
-    --ok-text: #137333;
-    --err-bg: #fce8e6;
-    --err-text: #c5221f;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
-  body {
-    font-family: 'Google Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .topbar {
-    height: 58px; padding: 0 16px; border-bottom: 1px solid var(--border);
-    background: var(--bg); display: flex; align-items: center;
-    justify-content: space-between; gap: 12px; flex-shrink: 0;
-  }
-  .topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .icon-btn {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    background: transparent; color: var(--text); display: inline-flex;
-    align-items: center; justify-content: center; cursor: pointer; font-size: 18px;
-  }
-  .icon-btn:hover { background: var(--surface-2); }
-  .logo-badge {
-    width: 30px; height: 30px; border-radius: 9px;
-    background: linear-gradient(135deg, #1a73e8, #5e35b1);
-    color: #fff; font-weight: 700; font-size: 15px;
-    display: inline-flex; align-items: center; justify-content: center;
-  }
-  .brand-title { font-weight: 600; font-size: 1rem; white-space: nowrap; }
-  .status-pills { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .pill {
-    font-size: 0.78rem; font-weight: 500; padding: 4px 10px;
-    border-radius: 999px; background: var(--surface); border: 1px solid var(--border);
-    color: var(--muted); white-space: nowrap;
-  }
-  .pill.ok { background: var(--ok-bg); border-color: #ceead6; color: var(--ok-text); }
-  .pill.err { background: var(--err-bg); border-color: #fad2cf; color: var(--err-text); }
-
-  .workspace { flex: 1; display: flex; min-height: 0; overflow: hidden; }
-  .sidebar {
-    width: 296px; background: var(--surface); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; padding: 12px; gap: 12px;
-    overflow-y: auto; flex-shrink: 0;
-  }
-  .sidebar.collapsed { display: none; }
-  .sb-section-title {
-    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.5px; color: var(--muted); padding: 2px 6px;
-  }
-  .nav-list { display: flex; flex-direction: column; gap: 3px; }
-  .nav-item {
-    width: 100%; text-align: left; padding: 8px 11px; border-radius: 10px;
-    border: none; background: transparent; color: var(--text); font-size: 0.88rem;
-    font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px;
-  }
-  .nav-item:hover { background: var(--surface-2); }
-  .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-
-  .card-box {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
-  }
-  .field-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; display: flex; flex-direction: column; gap: 4px; }
-  input, select, textarea {
-    font-family: inherit; font-size: 0.88rem; color: var(--text);
-    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-    padding: 8px 10px; width: 100%;
-  }
-  input:focus, select:focus, textarea:focus {
-    outline: none; border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.14);
-  }
-  .btn {
-    border: none; border-radius: 999px; padding: 8px 14px; font-size: 0.85rem;
-    font-weight: 600; cursor: pointer; display: inline-flex; align-items: center;
-    justify-content: center; gap: 6px; text-decoration: none;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-hover); }
-  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { background: #e8eaed; }
-  .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
-
-  .main-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
-  .view-pane { display: none; flex: 1; flex-direction: column; min-height: 0; }
-  .view-pane.active { display: flex; }
-
-  .stream-area { flex: 1; overflow-y: auto; padding: 24px 20px; }
-  .stream-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
-  .hero-greeting { padding: 8px 0 4px; }
-  .hero-greeting h1 {
-    margin: 0 0 6px; font-size: 1.7rem; font-weight: 600;
-    background: linear-gradient(90deg, #1a73e8, #5e35b1);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .hero-greeting p { margin: 0; color: var(--muted); font-size: 0.94rem; }
-
-  .shortcut-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;
-  }
-  .shortcut-tile {
-    text-align: left; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 12px 14px; cursor: pointer;
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .shortcut-tile:hover { border-color: var(--accent); background: var(--accent-soft); }
-  .shortcut-tile strong { font-size: 0.9rem; color: var(--text); }
-  .shortcut-tile span { font-size: 0.78rem; color: var(--muted); }
-
-  .msg-row { display: flex; flex-direction: column; gap: 6px; }
-  .msg-user {
-    align-self: flex-end; max-width: 82%;
-    background: var(--surface-2); color: var(--text);
-    padding: 11px 16px; border-radius: 18px 18px 4px 18px;
-    font-size: 0.94rem; white-space: pre-wrap;
-  }
-  .msg-ai {
-    align-self: stretch; background: var(--surface); border: 1px solid var(--border-soft);
-    border-radius: 16px; padding: 14px 16px; font-size: 0.92rem;
-  }
-  .msg-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
-  pre {
-    margin: 6px 0 0; white-space: pre-wrap; word-break: break-word;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.83rem; background: var(--bg); border: 1px solid var(--border-soft);
-    padding: 10px; border-radius: 10px;
-  }
-  video, audio, img.media-out {
-    max-width: 100%; border-radius: 12px; margin-top: 10px; display: block;
-    border: 1px solid var(--border);
-  }
-  .dl-link {
-    display: inline-block; margin-top: 8px; font-size: 0.86rem;
-    font-weight: 600; color: var(--accent); text-decoration: none;
-  }
-  .dl-link:hover { text-decoration: underline; }
-
-  .studio-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px;
-  }
-  .studio-card h2 { margin: 0; font-size: 1.15rem; font-weight: 600; }
-  .studio-card p.desc { margin: 0; font-size: 0.88rem; color: var(--muted); }
-  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-
-  .embed-frame {
-    width: 100%; flex: 1; min-height: 460px; border: 1px solid var(--border);
-    border-radius: 14px; background: var(--surface);
-  }
-  .embed-bar {
-    padding: 12px 20px; border-bottom: 1px solid var(--border-soft);
-    background: var(--surface); display: flex; align-items: center;
-    justify-content: space-between; gap: 10px; flex-wrap: wrap;
-  }
-
-  .composer-wrap {
-    border-top: 1px solid var(--border-soft); background: var(--bg);
-    padding: 12px 20px 18px; flex-shrink: 0;
-  }
-  .composer-box {
-    max-width: 860px; margin: 0 auto; background: var(--surface);
-    border: 1px solid var(--border); border-radius: 24px; padding: 10px 14px;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .composer-textarea {
-    border: none; background: transparent; resize: none;
-    min-height: 44px; max-height: 150px; padding: 4px 6px; font-size: 0.94rem;
-  }
-  .composer-textarea:focus { outline: none; box-shadow: none; }
-  .composer-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-  .small-note { font-size: 0.78rem; color: var(--muted); }
-  .log-line { font-size: 0.78rem; color: var(--muted); font-family: ui-monospace, monospace; }
-
-  @media (max-width: 780px) {
-    .sidebar { position: fixed; top: 58px; bottom: 0; left: 0; z-index: 20; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUX-Ω Omni v5 Turbo — Painel & Hub</title>
+  <style>
+    :root {
+      --bg: #08090e;
+      --panel: #11131d;
+      --panel-2: #171a28;
+      --border: #25293d;
+      --text: #f3f5fc;
+      --muted: #9aa2be;
+      --accent: #7c5cff;
+      --accent-2: #22d3ee;
+      --ok: #4ade80;
+      --warn: #facc15;
+      --err: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .brand h1 { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+    .pill {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--warn);
+    }
+    .pill.ok { color: var(--ok); border-color: rgba(74,222,128,0.35); }
+    .pill.err { color: var(--err); border-color: rgba(248,113,113,0.35); }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    button, .btn-link {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 13px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button.secondary, .btn-link.secondary {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.warn { background: #b45309; }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .tabs {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 0 18px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      color: var(--muted);
+      border-radius: 0;
+      border-bottom: 2px solid transparent;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+    }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+    #config-bar {
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: none;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 0.76rem; color: var(--muted); }
+    input, select, textarea {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 0.88rem;
+      width: 100%;
+    }
+    textarea { min-height: 84px; resize: vertical; }
+    main {
+      flex: 1;
+      padding: 18px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .view { display: none; flex-direction: column; gap: 14px; }
+    .view.active { display: flex; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+    .chat-box {
+      min-height: 300px;
+      max-height: 460px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 10px;
+      max-width: 86%;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.9rem;
+    }
+    .msg.user { background: var(--accent); align-self: flex-end; }
+    .msg.ai { background: var(--panel-2); border: 1px solid var(--border); align-self: flex-start; }
+    .row-flex { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .kv { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+    .kv .k { font-size: 0.74rem; color: var(--muted); }
+    .kv .v { font-size: 0.95rem; font-weight: 600; margin-top: 2px; word-break: break-all; }
+    iframe.app-frame {
+      width: 100%;
+      height: 68vh;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #050609;
+    }
+    pre.log-box {
+      background: #06070b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      max-height: 340px;
+    }
+    .media-preview { margin-top: 8px; max-width: 100%; border-radius: 8px; }
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button id="toggleSidebarBtn" class="icon-btn" type="button" title="Alternar menu">☰</button>
-      <span class="logo-badge">Ω</span>
-      <span class="brand-title">LUX-Ω Omni v2</span>
+  <header>
+    <div class="brand">
+      <h1>LUX-Ω v5 Turbo</h1>
+      <span id="conn-pill" class="pill">● Sincronizando...</span>
+      <span id="gpu-pill" class="pill">GPU: --</span>
+      <span id="comfy-pill" class="pill">Comfy (8188): --</span>
     </div>
-    <div class="status-pills">
-      <span id="apiPill" class="pill err">Colab: desconectado</span>
-      <span id="vramPill" class="pill">VRAM: --</span>
-      <span id="comfyPill" class="pill">Comfy: --</span>
+    <div class="actions">
+      <button class="secondary" onclick="syncNtfy(false)">📡 Sincronizar</button>
+      <button class="warn" onclick="freeVram()">🧹 Liberar VRAM</button>
+      <button class="secondary" onclick="toggleConfig()">⚙️ Config</button>
     </div>
   </header>
 
-  <div class="workspace">
-    <aside id="sidebar" class="sidebar">
-      <div class="sb-section-title">Estúdio & Ferramentas</div>
-      <div class="nav-list">
-        <button class="nav-item active" type="button" data-view="chat">💬 Chat & RAG (LLM/Whisper/Crawl)</button>
-        <button class="nav-item" type="button" data-view="creativefield">🎨 CreativeField (App Colab)</button>
-        <button class="nav-item" type="button" data-view="comfy">🕸️ ComfyUI & Wan 2.2</button>
-        <button class="nav-item" type="button" data-view="dub">🎬 Dublagem + Face Swap + LipSync</button>
-        <button class="nav-item" type="button" data-view="voice">🎙️ Clonar Voz (XTTS / F5)</button>
-        <button class="nav-item" type="button" data-view="swap">🎭 Trocar Rosto (Foto / Vídeo)</button>
-        <button class="nav-item" type="button" data-view="video">🎥 Vídeo GPU (Wan 2.1 / LTX)</button>
-        <button class="nav-item" type="button" data-view="jobs">📋 Jobs & Status Colab</button>
-      </div>
-
-      <div class="sb-section-title">Conexão Colab</div>
-      <div class="card-box">
-        <label class="field-label">
-          URL Backend Colab (trycloudflare)
-          <input id="apiUrlInput" type="url" placeholder="https://xxxx.trycloudflare.com">
-        </label>
-        <label class="field-label">
-          URL CreativeField (opcional)
-          <input id="cfUrlInput" type="url" placeholder="https://yyyy.trycloudflare.com">
-        </label>
-        <label class="field-label">
-          URL ComfyUI (opcional)
-          <input id="comfyUrlInput" type="url" placeholder="https://zzzz.trycloudflare.com">
-        </label>
-        <label class="field-label">
-          Canal ntfy
-          <input id="channelInput" type="text" value="lux-omega-kauan-v55">
-        </label>
-        <div class="btn-row">
-          <button id="connectBtn" type="button" class="btn btn-primary" style="flex:1;">Conectar</button>
-          <button id="syncBtn" type="button" class="btn btn-secondary">Sincronizar</button>
-        </div>
-        <div id="connLog" class="log-line">Pronto para conectar.</div>
-      </div>
-
-      <div class="card-box">
-        <div class="small-note">
-          Drive: cache, <code>db/rag_memory.jsonl</code> e <code>jobs</code> reaproveitados.<br>
-          Mídias geradas ficam em <code>/content/lux_session_tmp/outputs</code> para baixar na hora.
-        </div>
-      </div>
-    </aside>
-
-    <main class="main-panel">
-      <section id="view-chat" class="view-pane active">
-        <div class="stream-area">
-          <div id="chatStream" class="stream-inner">
-            <div class="hero-greeting">
-              <h1>LUX-Ω Omni v2</h1>
-              <p>Conecte seu notebook do Google Colab ou use os atalhos abaixo para navegar pelas ferramentas.</p>
-            </div>
-
-            <div class="shortcut-grid">
-              <button class="shortcut-tile" type="button" data-shortcut="creativefield">
-                <strong>🎨 Abrir CreativeField</strong>
-                <span>Atalho para o app em /content/Creativefield</span>
-              </button>
-              <button class="shortcut-tile" type="button" data-shortcut="dub">
-                <strong>🎬 Dublagem Completa</strong>
-                <span>Face Swap + GFPGAN + XTTS + Wav2Lip</span>
-              </button>
-              <button class="shortcut-tile" type="button" data-shortcut="whisper">
-                <strong>🎧 Whisper + RAG</strong>
-                <span>Transcreve mídia e salva no Drive</span>
-              </button>
-              <button class="shortcut-tile" type="button" data-shortcut="crawl4ai">
-                <strong>🌐 Crawl4AI + RAG</strong>
-                <span>Extrai página web e salva no Drive</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="composer-wrap">
-          <div class="composer-box">
-            <textarea id="chatInput" class="composer-textarea" placeholder="Digite um prompt, texto para TTS, código Python ou URL..."></textarea>
-            <div class="composer-footer">
-              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; flex:1;">
-                <select id="chatTool" style="max-width:215px;">
-                  <option value="llm_gpu">LLM GPU</option>
-                  <option value="whisper">Whisper + RAG (URL)</option>
-                  <option value="crawl4ai">Crawl4AI + RAG (URL)</option>
-                  <option value="tts">Edge TTS (pt-BR)</option>
-                  <option value="python">Python rápido</option>
-                </select>
-                <input id="chatUrl" type="url" placeholder="URL (Whisper / Crawl4AI)" style="max-width:260px;">
-              </div>
-              <button id="chatSendBtn" type="button" class="btn btn-primary">Enviar</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-creativefield" class="view-pane">
-        <div class="embed-bar">
-          <div>
-            <strong>CreativeField</strong>
-            <span class="small-note"> — Clonado em <code>/content/Creativefield</code> no Colab</span>
-          </div>
-          <div class="btn-row">
-            <button id="cfReloadBtn" type="button" class="btn btn-secondary">Carregar no painel</button>
-            <a id="cfExternalLink" href="#" target="_blank" rel="noopener" class="btn btn-primary">Abrir em nova aba</a>
-          </div>
-        </div>
-        <div class="stream-area" style="display:flex; flex-direction:column; gap:12px;">
-          <div id="cfNotice" class="msg-ai">
-            <div class="msg-meta">Como conectar o CreativeField do Colab</div>
-            Informe a URL pública do túnel (<code>https://...trycloudflare.com</code>) do servidor CreativeField na barra lateral e clique em <strong>Conectar</strong> ou <strong>Carregar no painel</strong>.
-          </div>
-          <iframe id="cfFrame" class="embed-frame" title="CreativeField"></iframe>
-        </div>
-      </section>
-
-      <section id="view-comfy" class="view-pane">
-        <div class="embed-bar">
-          <div>
-            <strong>ComfyUI + Wan 2.2</strong>
-            <span class="small-note"> — Cache em <code>Colab_AI_Workspace/cache/comfyui</code></span>
-          </div>
-          <div class="btn-row">
-            <button id="comfyReloadBtn" type="button" class="btn btn-secondary">Carregar ComfyUI</button>
-            <a id="comfyExternalLink" href="#" target="_blank" rel="noopener" class="btn btn-primary">Abrir em nova aba</a>
-          </div>
-        </div>
-        <div class="stream-area" style="display:flex; flex-direction:column; gap:12px;">
-          <div id="comfyNotice" class="msg-ai">
-            <div class="msg-meta">Status do ComfyUI</div>
-            O badge superior lê <code>comfy_8188</code> no endpoint <code>/status</code> do backend Colab. Cole a URL do túnel do ComfyUI na barra lateral para abrir a interface aqui ou em nova aba.
-          </div>
-          <iframe id="comfyFrame" class="embed-frame" title="ComfyUI"></iframe>
-        </div>
-      </section>
-
-      <section id="view-dub" class="view-pane">
-        <div class="stream-area">
-          <div class="stream-inner">
-            <div class="studio-card">
-              <h2>Dublagem + Troca de Rosto + Sincronização Labial</h2>
-              <p class="desc">Envia para <code>/dub_video</code> e acompanha o progresso via <code>/jobs/{job_id}</code>.</p>
-              <div class="grid-2">
-                <label class="field-label">Vídeo base (obrigatório)
-                  <input id="dubVideoFile" type="file" accept="video/*">
-                </label>
-                <label class="field-label">Nome da pessoa p/ rosto (opcional)
-                  <input id="dubTargetName" type="text" placeholder="Ex: Keanu Reeves">
-                </label>
-                <label class="field-label">Idioma
-                  <select id="dubLang">
-                    <option value="pt">Português (pt)</option>
-                    <option value="en">Inglês (en)</option>
-                    <option value="es">Espanhol (es)</option>
-                    <option value="fr">Francês (fr)</option>
-                    <option value="de">Alemão (de)</option>
-                    <option value="it">Italiano (it)</option>
-                  </select>
-                </label>
-                <label class="field-label">Áudio/vídeo de referência de voz (opcional)
-                  <input id="dubVoiceFile" type="file" accept="audio/*,video/*">
-                </label>
-              </div>
-              <label class="field-label">Texto para dublar
-                <textarea id="dubText" rows="3" placeholder="Texto que será falado no vídeo..."></textarea>
-              </label>
-              <div><button id="dubBtn" type="button" class="btn btn-primary">Iniciar Dublagem</button></div>
-            </div>
-            <div id="dubOut" class="msg-ai"><div class="msg-meta">Resultado</div>Pronto para enviar.</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-voice" class="view-pane">
-        <div class="stream-area">
-          <div class="stream-inner">
-            <div class="studio-card">
-              <h2>Clonagem de Voz</h2>
-              <p class="desc">Envia referência de áudio/vídeo ou link para <code>/voice_clone</code>.</p>
-              <div class="grid-2">
-                <label class="field-label">Arquivo de referência
-                  <input id="voiceFile" type="file" accept="audio/*,video/*">
-                </label>
-                <label class="field-label">Ou URL de mídia
-                  <input id="voiceUrl" type="url" placeholder="https://...">
-                </label>
-                <label class="field-label">Motor
-                  <select id="voiceEngine">
-                    <option value="xtts">XTTS-v2</option>
-                    <option value="f5">F5-TTS</option>
-                  </select>
-                </label>
-                <label class="field-label">Idioma / Limpar fundo
-                  <div style="display:flex; gap:8px;">
-                    <input id="voiceLang" type="text" value="pt" style="max-width:90px;">
-                    <select id="voiceCleanBg">
-                      <option value="1">Demucs: Sim</option>
-                      <option value="0">Demucs: Não</option>
-                    </select>
-                  </div>
-                </label>
-              </div>
-              <label class="field-label">Texto a sintetizar
-                <textarea id="voiceText" rows="3" placeholder="Texto com a voz clonada..."></textarea>
-              </label>
-              <div><button id="voiceBtn" type="button" class="btn btn-primary">Gerar Voz</button></div>
-            </div>
-            <div id="voiceOut" class="msg-ai"><div class="msg-meta">Resultado</div>Pronto para enviar.</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-swap" class="view-pane">
-        <div class="stream-area">
-          <div class="stream-inner">
-            <div class="studio-card">
-              <h2>Troca de Rosto</h2>
-              <p class="desc">Aplica troca facial em imagem ou vídeo via <code>/face_swap</code>.</p>
-              <div class="grid-2">
-                <label class="field-label">Imagem ou vídeo base (obrigatório)
-                  <input id="swapMediaFile" type="file" accept="image/*,video/*">
-                </label>
-                <label class="field-label">Nome da pessoa (busca automática)
-                  <input id="swapTargetName" type="text" placeholder="Ex: Pedro Pascal">
-                </label>
-                <label class="field-label">Ou foto de referência
-                  <input id="swapFaceFile" type="file" accept="image/*">
-                </label>
-              </div>
-              <div><button id="swapBtn" type="button" class="btn btn-primary">Aplicar Face Swap</button></div>
-            </div>
-            <div id="swapOut" class="msg-ai"><div class="msg-meta">Resultado</div>Pronto para enviar.</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-video" class="view-pane">
-        <div class="stream-area">
-          <div class="stream-inner">
-            <div class="studio-card">
-              <h2>Geração de Vídeo na GPU</h2>
-              <p class="desc">Executa <code>video_gpu</code> via <code>/run</code> e acompanha em <code>/jobs/{job_id}</code>.</p>
-              <div class="grid-2">
-                <label class="field-label">Motor
-                  <select id="vidEngine">
-                    <option value="wan">Wan 2.1 T2V</option>
-                    <option value="ltx">LTX-Video</option>
-                  </select>
-                </label>
-              </div>
-              <label class="field-label">Prompt
-                <textarea id="vidPrompt" rows="3" placeholder="Cinematic drone shot over coastal cliffs at golden hour, 4k"></textarea>
-              </label>
-              <div><button id="vidBtn" type="button" class="btn btn-primary">Gerar Vídeo</button></div>
-            </div>
-            <div id="vidOut" class="msg-ai"><div class="msg-meta">Resultado</div>Pronto para enviar.</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-jobs" class="view-pane">
-        <div class="stream-area">
-          <div class="stream-inner">
-            <div class="studio-card">
-              <h2>Status do Colab & Consultar Job</h2>
-              <p class="desc">Verifica <code>/status</code>, <code>/health</code> e consulta o estado de um <code>job_id</code> salvo.</p>
-              <div class="grid-2">
-                <label class="field-label">ID do Job
-                  <input id="jobIdInput" type="text" placeholder="Ex: 8f3a1c2b">
-                </label>
-              </div>
-              <div class="btn-row">
-                <button id="checkStatusBtn" type="button" class="btn btn-primary">Atualizar Status Colab</button>
-                <button id="checkJobBtn" type="button" class="btn btn-secondary">Consultar Job</button>
-              </div>
-            </div>
-            <div id="jobsOut" class="msg-ai"><div class="msg-meta">Diagnóstico</div>Pronto para consultar.</div>
-          </div>
-        </div>
-      </section>
-    </main>
+  <div id="config-bar">
+    <div class="field">
+      <label>Canal ntfy.sh</label>
+      <input id="cfg-ntfy" type="text" value="lux-omega-kauan-v55" />
+    </div>
+    <div class="field">
+      <label>URL Pública da API (Porta 8000)</label>
+      <input id="cfg-api" type="url" placeholder="https://..." />
+    </div>
+    <div class="field">
+      <label>URL Pública ComfyUI (Porta 8188)</label>
+      <input id="cfg-comfy" type="url" placeholder="https://..." />
+    </div>
+    <div class="field">
+      <label>URL Pública CreativeField</label>
+      <input id="cfg-cf" type="url" placeholder="https://..." />
+    </div>
+    <div class="field" style="justify-content: flex-end;">
+      <button onclick="saveConfig()">Salvar & Testar</button>
+    </div>
   </div>
 
-<script>
-(function () {
-  const KEY_API = "lux_omega_v2_colab_url";
-  const KEY_CF = "lux_omega_v2_cf_url";
-  const KEY_COMFY = "lux_omega_v2_comfy_url";
-  const mem = {};
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="chat" onclick="switchTab('chat')">💬 Chat & /run</button>
+    <button class="tab-btn" data-tab="media" onclick="switchTab('media')">🎬 Dublagem / Voz / Rosto</button>
+    <button class="tab-btn" data-tab="comfy" onclick="switchTab('comfy')">🧩 ComfyUI</button>
+    <button class="tab-btn" data-tab="cf" onclick="switchTab('cf')">🎨 CreativeField</button>
+    <button class="tab-btn" data-tab="jobs" onclick="switchTab('jobs')">📊 Status & Jobs</button>
+  </nav>
 
-  function readPref(key) {
-    try { return localStorage.getItem(key) || ""; } catch (_) { return mem[key] || ""; }
-  }
-  function writePref(key, val) {
-    mem[key] = val;
-    try { localStorage.setItem(key, val); } catch (_) {}
-  }
+  <main>
+    <!-- ABA 1: CHAT & /RUN -->
+    <section id="view-chat" class="view active">
+      <div class="card">
+        <div class="row-flex">
+          <select id="run-tool" style="max-width: 210px;" onchange="onToolChange()">
+            <option value="llm_gpu">LLM GPU (/run)</option>
+            <option value="image_gpu">Imagem GPU (/run)</option>
+            <option value="video_gpu">Vídeo GPU Wan/LTX (/run)</option>
+            <option value="tts">TTS Edge (/run)</option>
+            <option value="whisper">Whisper + RAG (/run)</option>
+            <option value="crawl4ai">Crawl4AI + RAG (/run)</option>
+            <option value="python">Python Exec (/run)</option>
+          </select>
+          <input id="run-extra" type="text" style="max-width: 280px;" placeholder="Modelo LLM / Engine / URL / Código..." />
+          <span id="last-job-label" style="font-size: 0.82rem; color: var(--muted);">Job: nenhum</span>
+        </div>
+        <div id="chat-box" class="chat-box">
+          <div class="msg ai">Pronto. Clique em Sincronizar para puxar o link ativo do Colab no canal ntfy.sh.</div>
+        </div>
+        <form class="row-flex" onsubmit="submitRun(event)">
+          <input id="run-prompt" type="text" placeholder="Digite o prompt, texto TTS, URL ou instrução..." required style="flex: 1; min-width: 220px;" />
+          <button id="run-send-btn" type="submit">Executar</button>
+        </form>
+      </div>
+    </section>
 
-  function normalizeUrl(raw) {
-    let u = (raw || "").trim().replace(/\/+$/, "");
-    if (u && !/^https?:\/\//i.test(u)) u = "https://" + u;
-    return u;
-  }
+    <!-- ABA 2: DUBLAGEM / VOZ / ROSTO -->
+    <section id="view-media" class="view">
+      <div class="grid-2">
+        <div class="card">
+          <h3>🎭 Dublagem Completa (/dub_video)</h3>
+          <div class="field"><label>Vídeo de entrada</label><input id="dub-video" type="file" accept="video/*" /></div>
+          <div class="field"><label>Alvo de rosto (nome para buscar imagem)</label><input id="dub-target" type="text" placeholder="Ex: Keanu Reeves" /></div>
+          <div class="field"><label>Texto para clonagem de voz / fala</label><textarea id="dub-text" placeholder="Texto a falar no vídeo..."></textarea></div>
+          <div class="field"><label>Idioma</label><input id="dub-lang" type="text" value="pt" /></div>
+          <div class="field"><label>Áudio de referência (opcional)</label><input id="dub-voice-ref" type="file" accept="audio/*,video/*" /></div>
+          <button onclick="sendDubVideo()">Enviar /dub_video</button>
+          <div id="dub-result"></div>
+        </div>
 
-  let apiUrl = normalizeUrl(readPref(KEY_API));
-  let cfUrl = normalizeUrl(readPref(KEY_CF));
-  let comfyUrl = normalizeUrl(readPref(KEY_COMFY));
+        <div class="card">
+          <h3>🎙️ Clonagem de Voz (/voice_clone) & 🔄 Rosto (/face_swap)</h3>
+          <div class="field"><label>Texto para voz</label><input id="vc-text" type="text" placeholder="Olá, teste de voz..." /></div>
+          <div class="row-flex">
+            <input id="vc-lang" type="text" value="pt" style="max-width: 90px;" />
+            <input id="vc-engine" type="text" value="xtts" style="max-width: 120px;" />
+            <button onclick="sendVoiceClone()">Gerar Voz</button>
+          </div>
+          <div id="vc-result"></div>
+          <hr style="border-color: var(--border); margin: 6px 0;" />
+          <div class="field"><label>Arquivo de mídia (imagem ou vídeo)</label><input id="fs-media" type="file" accept="image/*,video/*" /></div>
+          <div class="field"><label>Rosto de referência (opcional)</label><input id="fs-face" type="file" accept="image/*" /></div>
+          <div class="field"><label>Nome alvo (opcional)</label><input id="fs-target" type="text" placeholder="Nome do rosto..." /></div>
+          <button onclick="sendFaceSwap()">Enviar /face_swap</button>
+          <div id="fs-result"></div>
+        </div>
+      </div>
+    </section>
 
-  const apiUrlInput = document.getElementById("apiUrlInput");
-  const cfUrlInput = document.getElementById("cfUrlInput");
-  const comfyUrlInput = document.getElementById("comfyUrlInput");
-  const apiPill = document.getElementById("apiPill");
-  const vramPill = document.getElementById("vramPill");
-  const comfyPill = document.getElementById("comfyPill");
-  const connLog = document.getElementById("connLog");
+    <!-- ABA 3: COMFYUI -->
+    <section id="view-comfy" class="view">
+      <div class="card">
+        <div class="row-flex">
+          <input id="comfy-url-input" type="url" placeholder="https://... (URL da porta 8188)" style="flex: 1;" />
+          <button onclick="applyIframeUrl('comfy')">Carregar Painel</button>
+          <a id="comfy-ext-link" class="btn-link secondary" href="#" target="_blank" rel="noopener">Abrir em nova aba ↗</a>
+        </div>
+        <iframe id="comfy-frame" class="app-frame" src="about:blank"></iframe>
+      </div>
+    </section>
 
-  if (apiUrl) apiUrlInput.value = apiUrl;
-  if (cfUrl) cfUrlInput.value = cfUrl;
-  if (comfyUrl) comfyUrlInput.value = comfyUrl;
+    <!-- ABA 4: CREATIVEFIELD -->
+    <section id="view-cf" class="view">
+      <div class="card">
+        <div class="row-flex">
+          <input id="cf-url-input" type="url" placeholder="https://... (URL do CreativeField)" style="flex: 1;" />
+          <button onclick="applyIframeUrl('cf')">Carregar Painel</button>
+          <a id="cf-ext-link" class="btn-link secondary" href="#" target="_blank" rel="noopener">Abrir em nova aba ↗</a>
+        </div>
+        <iframe id="cf-frame" class="app-frame" src="about:blank"></iframe>
+      </div>
+    </section>
 
-  function logConn(msg) {
-    if (connLog) connLog.textContent = msg;
-  }
+    <!-- ABA 5: STATUS & JOBS -->
+    <section id="view-jobs" class="view">
+      <div class="card">
+        <div class="row-flex">
+          <button onclick="refreshStatus()">Atualizar /status</button>
+          <input id="job-lookup-id" type="text" placeholder="ID do job (ex: a1b2c3d4)" style="max-width: 220px;" />
+          <button class="secondary" onclick="lookupJob()">Consultar /jobs/{id}</button>
+        </div>
+        <div class="status-grid" id="status-cards"></div>
+        <pre id="status-json" class="log-box">{}</pre>
+      </div>
+    </section>
+  </main>
 
-  function saveEndpoints() {
-    apiUrl = normalizeUrl(apiUrlInput.value);
-    cfUrl = normalizeUrl(cfUrlInput.value);
-    comfyUrl = normalizeUrl(comfyUrlInput.value);
-    apiUrlInput.value = apiUrl;
-    cfUrlInput.value = cfUrl;
-    comfyUrlInput.value = comfyUrl;
-    writePref(KEY_API, apiUrl);
-    writePref(KEY_CF, cfUrl);
-    writePref(KEY_COMFY, comfyUrl);
-    updateEmbedLinks();
-  }
+  <script>
+    const els = {
+      ntfy: document.getElementById('cfg-ntfy'),
+      api: document.getElementById('cfg-api'),
+      comfy: document.getElementById('cfg-comfy'),
+      cf: document.getElementById('cfg-cf'),
+      connPill: document.getElementById('conn-pill'),
+      gpuPill: document.getElementById('gpu-pill'),
+      comfyPill: document.getElementById('comfy-pill'),
+      chatBox: document.getElementById('chat-box'),
+      runTool: document.getElementById('run-tool'),
+      runExtra: document.getElementById('run-extra'),
+      runPrompt: document.getElementById('run-prompt'),
+      runSendBtn: document.getElementById('run-send-btn'),
+      lastJobLabel: document.getElementById('last-job-label'),
+      statusCards: document.getElementById('status-cards'),
+      statusJson: document.getElementById('status-json'),
+      jobLookupId: document.getElementById('job-lookup-id'),
+      comfyUrlInput: document.getElementById('comfy-url-input'),
+      cfUrlInput: document.getElementById('cf-url-input'),
+      comfyFrame: document.getElementById('comfy-frame'),
+      cfFrame: document.getElementById('cf-frame'),
+      comfyExtLink: document.getElementById('comfy-ext-link'),
+      cfExtLink: document.getElementById('cf-ext-link'),
+    };
 
-  function updateEmbedLinks() {
-    const cfLink = document.getElementById("cfExternalLink");
-    const comfyLink = document.getElementById("comfyExternalLink");
-    cfLink.href = cfUrl || "#";
-    comfyLink.href = comfyUrl || "#";
-  }
-  updateEmbedLinks();
-
-  function switchView(viewName) {
-    document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.view === viewName));
-    document.querySelectorAll(".view-pane").forEach(v => v.classList.toggle("active", v.id === "view-" + viewName));
-    if (window.innerWidth <= 780) {
-      document.getElementById("sidebar").classList.add("collapsed");
-    }
-    logConn("Modo: " + viewName);
-  }
-
-  function loadCreativeField() {
-    const frame = document.getElementById("cfFrame");
-    const notice = document.getElementById("cfNotice");
-    if (!cfUrl) {
-      notice.innerHTML = '<div class="msg-meta">URL do CreativeField não informada</div>Cole a URL do túnel do CreativeField na barra lateral e clique em <strong>Conectar</strong> ou <strong>Carregar no painel</strong>.';
-      frame.removeAttribute("src");
-      return;
-    }
-    notice.innerHTML = `<div class="msg-meta">Carregando CreativeField</div>Conectando em <code>${cfUrl}</code>...`;
-    frame.src = cfUrl;
-  }
-
-  function loadComfyFrame() {
-    const frame = document.getElementById("comfyFrame");
-    const notice = document.getElementById("comfyNotice");
-    if (!comfyUrl) {
-      notice.innerHTML = '<div class="msg-meta">URL do ComfyUI não informada</div>Cole a URL do túnel do ComfyUI na barra lateral (ou use o botão <strong>Abrir em nova aba</strong> quando configurar).';
-      frame.removeAttribute("src");
-      return;
-    }
-    notice.innerHTML = `<div class="msg-meta">Carregando ComfyUI</div>Conectando em <code>${comfyUrl}</code>...`;
-    frame.src = comfyUrl;
-  }
-
-  function resolveUrl(u) {
-    if (!u) return "";
-    if (/^https?:\/\//i.test(u)) return u;
-    return apiUrl + (u.startsWith("/") ? u : "/" + u);
-  }
-
-  function appendMediaElements(container, data) {
-    const mediaUrl = resolveUrl(data && data.url);
-    if (!mediaUrl) return;
-
-    const link = document.createElement("a");
-    link.href = mediaUrl;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.className = "dl-link";
-    link.textContent = "Abrir / Baixar mídia gerada";
-    container.appendChild(link);
-
-    if (data.type === "video" || /\.(mp4|webm|mov)(\?|$)/i.test(mediaUrl)) {
-      const v = document.createElement("video");
-      v.src = mediaUrl;
-      v.controls = true;
-      v.className = "media-out";
-      container.appendChild(v);
-    } else if (data.type === "audio" || /\.(wav|mp3|ogg)(\?|$)/i.test(mediaUrl)) {
-      const a = document.createElement("audio");
-      a.src = mediaUrl;
-      a.controls = true;
-      a.className = "media-out";
-      container.appendChild(a);
-    } else if (data.type === "image" || /\.(jpg|jpeg|png|webp)(\?|$)/i.test(mediaUrl)) {
-      const img = document.createElement("img");
-      img.src = mediaUrl;
-      img.className = "media-out";
-      container.appendChild(img);
-    }
-  }
-
-  function renderCardResult(el, title, data) {
-    el.innerHTML = "";
-    const meta = document.createElement("div");
-    meta.className = "msg-meta";
-    meta.textContent = title;
-    el.appendChild(meta);
-
-    if (typeof data === "string") {
-      const p = document.createElement("div");
-      p.textContent = data;
-      el.appendChild(p);
-      return;
+    function cleanUrl(u) {
+      return (u || '').trim().replace(/\/+$/, '');
     }
 
-    if (data && typeof data.text === "string" && !data.url) {
-      const p = document.createElement("div");
-      p.style.whiteSpace = "pre-wrap";
-      p.textContent = data.text;
-      el.appendChild(p);
+    function loadSaved() {
+      els.ntfy.value = localStorage.getItem('lux_ntfy') || 'lux-omega-kauan-v55';
+      els.api.value = localStorage.getItem('lux_api_url') || '';
+      els.comfy.value = localStorage.getItem('lux_comfy_url') || '';
+      els.cf.value = localStorage.getItem('lux_cf_url') || '';
+      els.comfyUrlInput.value = els.comfy.value;
+      els.cfUrlInput.value = els.cf.value;
+      syncExternalLinks();
     }
 
-    const pre = document.createElement("pre");
-    pre.textContent = JSON.stringify(data, null, 2);
-    el.appendChild(pre);
-    appendMediaElements(el, data);
-  }
+    function syncExternalLinks() {
+      const cUrl = cleanUrl(els.comfy.value);
+      const fUrl = cleanUrl(els.cf.value);
+      els.comfyExtLink.href = cUrl || '#';
+      els.cfExtLink.href = fUrl || '#';
+    }
 
-  async function pollJob(jobId, onTick, onDone) {
-    document.getElementById("jobIdInput").value = jobId;
-    for (let i = 0; i < 600; i++) {
-      await new Promise(r => setTimeout(r, 2000));
-      const res = await fetch(`${apiUrl}/jobs/${encodeURIComponent(jobId)}`);
-      const data = await res.json();
-      if (data.status === "queued" || data.status === "running") {
-        onTick(`Job ${jobId}: ${data.status}...`);
-        continue;
+    function saveConfig() {
+      localStorage.setItem('lux_ntfy', els.ntfy.value.trim() || 'lux-omega-kauan-v55');
+      localStorage.setItem('lux_api_url', cleanUrl(els.api.value));
+      localStorage.setItem('lux_comfy_url', cleanUrl(els.comfy.value));
+      localStorage.setItem('lux_cf_url', cleanUrl(els.cf.value));
+      els.comfyUrlInput.value = cleanUrl(els.comfy.value);
+      els.cfUrlInput.value = cleanUrl(els.cf.value);
+      syncExternalLinks();
+      document.getElementById('config-bar').style.display = 'none';
+      refreshStatus();
+    }
+
+    function toggleConfig() {
+      const bar = document.getElementById('config-bar');
+      bar.style.display = bar.style.display === 'none' || !bar.style.display ? 'grid' : 'none';
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+      document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === `view-${name}`));
+      if (name === 'jobs') refreshStatus();
+    }
+
+    function applyIframeUrl(kind) {
+      if (kind === 'comfy') {
+        const u = cleanUrl(els.comfyUrlInput.value);
+        els.comfy.value = u;
+        localStorage.setItem('lux_comfy_url', u);
+        syncExternalLinks();
+        els.comfyFrame.src = u || 'about:blank';
+      } else {
+        const u = cleanUrl(els.cfUrlInput.value);
+        els.cf.value = u;
+        localStorage.setItem('lux_cf_url', u);
+        syncExternalLinks();
+        els.cfFrame.src = u || 'about:blank';
       }
-      onDone(data);
-      return;
     }
-    onDone({ ok: false, job_id: jobId, status: "timeout", error: "Tempo limite excedido no acompanhamento." });
-  }
 
-  async function refreshStatus() {
-    if (!apiUrl) {
-      apiPill.textContent = "Colab: desconectado";
-      apiPill.className = "pill err";
-      logConn("Sem URL de backend configurada.");
-      return null;
+    function addMsg(text, who = 'ai') {
+      const div = document.createElement('div');
+      div.className = `msg ${who}`;
+      div.textContent = text;
+      els.chatBox.appendChild(div);
+      els.chatBox.scrollTop = els.chatBox.scrollHeight;
+      return div;
     }
-    logConn(`Testando ${apiUrl}/status ...`);
-    try {
-      const res = await fetch(`${apiUrl}/status`, { mode: "cors" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const st = await res.json();
-      if (st && st.ok) {
-        apiPill.textContent = "Colab: online";
-        apiPill.className = "pill ok";
-        vramPill.textContent = `VRAM: ${st.free_vram_gb ?? "--"} GB`;
-        comfyPill.textContent = `Comfy: ${st.comfy_8188 ? "ativo" : "inativo"}`;
-        logConn("Conectado ao backend Colab.");
-        return st;
-      }
-      throw new Error("Resposta JSON sem ok=true");
-    } catch (err) {
-      apiPill.textContent = "Colab: offline";
-      apiPill.className = "pill err";
-      logConn(`Falha ao conectar: ${err.message || "erro de rede/CORS"}`);
-      return null;
+
+    function onToolChange() {
+      const t = els.runTool.value;
+      if (t === 'llm_gpu') els.runExtra.placeholder = 'Modelo LLM (opcional, ex: Qwen/Qwen2.5-3B-Instruct)';
+      else if (t === 'image_gpu' || t === 'video_gpu') els.runExtra.placeholder = 'Engine (wan, ltx, sdxl_lightning, flux_schnell)';
+      else if (t === 'whisper' || t === 'crawl4ai') els.runExtra.placeholder = 'URL alvo';
+      else if (t === 'python') els.runExtra.placeholder = 'Código Python curto (opcional)';
+      else els.runExtra.placeholder = 'Parâmetro extra (opcional)';
     }
-  }
 
-  document.getElementById("toggleSidebarBtn").addEventListener("click", () => {
-    const sb = document.getElementById("sidebar");
-    sb.classList.toggle("collapsed");
-    logConn(sb.classList.contains("collapsed") ? "Menu recolhido." : "Menu expandido.");
-  });
-
-  document.querySelectorAll(".nav-item").forEach(btn => {
-    btn.addEventListener("click", () => switchView(btn.dataset.view));
-  });
-
-  document.querySelectorAll(".shortcut-tile").forEach(tile => {
-    tile.addEventListener("click", () => {
-      const sc = tile.dataset.shortcut;
-      if (sc === "creativefield") {
-        switchView("creativefield");
-        loadCreativeField();
-      } else if (sc === "dub") {
-        switchView("dub");
-      } else if (sc === "whisper") {
-        document.getElementById("chatTool").value = "whisper";
-        document.getElementById("chatUrl").focus();
-        logConn("Ferramenta selecionada: Whisper + RAG.");
-      } else if (sc === "crawl4ai") {
-        document.getElementById("chatTool").value = "crawl4ai";
-        document.getElementById("chatUrl").focus();
-        logConn("Ferramenta selecionada: Crawl4AI + RAG.");
-      }
-    });
-  });
-
-  document.getElementById("connectBtn").addEventListener("click", async () => {
-    saveEndpoints();
-    if (cfUrl) loadCreativeField();
-    if (comfyUrl) loadComfyFrame();
-    await refreshStatus();
-  });
-
-  document.getElementById("syncBtn").addEventListener("click", async () => {
-    const ch = (document.getElementById("channelInput").value || "").trim();
-    if (!ch) { logConn("Informe o canal ntfy."); return; }
-    logConn(`Consultando ntfy.sh/${ch} ...`);
-    try {
-      const res = await fetch(`https://ntfy.sh/${encodeURIComponent(ch)}/json?poll=1&since=6h`);
-      const text = await res.text();
-      const lines = text.trim().split("
-").filter(Boolean);
-      for (let i = lines.length - 1; i >= 0; i--) {
+    function extractUrlsFromPayload(rawStr) {
+      const out = { api: null, comfy: null, cf: null };
+      try {
+        const obj = JSON.parse(rawStr);
+        const msgStr = typeof obj.message === 'string' ? obj.message : rawStr;
         try {
-          const outer = JSON.parse(lines[i]);
-          const inner = typeof outer.message === "string" ? JSON.parse(outer.message) : outer.message;
-          if (inner && inner.api_url) {
-            apiUrlInput.value = inner.api_url;
-            if (inner.creativefield_url) cfUrlInput.value = inner.creativefield_url;
-            if (inner.comfy_url) comfyUrlInput.value = inner.comfy_url;
-            saveEndpoints();
-            logConn(`URL encontrada: ${inner.api_url}`);
-            await refreshStatus();
-            return;
-          }
+          const parsedInner = JSON.parse(msgStr);
+          if (parsedInner.api_url) out.api = parsedInner.api_url;
+          if (parsedInner.comfy_url) out.comfy = parsedInner.comfy_url;
+          if (parsedInner.creativefield_url) out.cf = parsedInner.creativefield_url;
         } catch (_) {}
+        const allUrls = (rawStr + ' ' + msgStr).match(/https?:\/\/[^\s"'<>]+|http?:\/\/bore\.pub:\d+/g) || [];
+        if (!out.api && allUrls.length) out.api = allUrls[0];
+        if (!out.comfy && allUrls.length > 1) out.comfy = allUrls[1];
+        if (!out.cf && allUrls.length > 2) out.cf = allUrls[2];
+      } catch (_) {}
+      return out;
+    }
+
+    async function syncNtfy(silent = true) {
+      const ch = (els.ntfy.value || 'lux-omega-kauan-v55').trim();
+      els.connPill.className = 'pill';
+      els.connPill.textContent = '● Sincronizando...';
+      try {
+        const res = await fetch(`https://ntfy.sh/${encodeURIComponent(ch)}/json?poll=1&since=24h`);
+        const txt = await res.text();
+        let found = { api: null, comfy: null, cf: null };
+        for (const line of txt.split('
+')) {
+          if (!line.trim()) continue;
+          const u = extractUrlsFromPayload(line);
+          if (u.api) found.api = cleanUrl(u.api);
+          if (u.comfy) found.comfy = cleanUrl(u.comfy);
+          if (u.cf) found.cf = cleanUrl(u.cf);
+        }
+        let changed = false;
+        if (found.api) { els.api.value = found.api; localStorage.setItem('lux_api_url', found.api); changed = true; }
+        if (found.comfy) { els.comfy.value = found.comfy; els.comfyUrlInput.value = found.comfy; localStorage.setItem('lux_comfy_url', found.comfy); changed = true; }
+        if (found.cf) { els.cf.value = found.cf; els.cfUrlInput.value = found.cf; localStorage.setItem('lux_cf_url', found.cf); changed = true; }
+        syncExternalLinks();
+        await refreshStatus();
+        if (!silent) {
+          addMsg(changed ? `Sincronizado com sucesso:
+API: ${found.api || '(mantida)'}` : 'Nenhuma URL nova encontrada nas últimas 24h no canal ntfy.', 'ai');
+        }
+      } catch (e) {
+        els.connPill.className = 'pill err';
+        els.connPill.textContent = '● Sem conexão';
+        if (!silent) addMsg(`Falha ao sincronizar ntfy: ${e.message}`, 'ai');
       }
-      logConn("Nenhuma URL publicada no canal recentemente.");
-    } catch (e) {
-      logConn(`Erro ntfy: ${e.message}`);
-    }
-  });
-
-  document.getElementById("cfReloadBtn").addEventListener("click", () => {
-    saveEndpoints();
-    loadCreativeField();
-  });
-
-  document.getElementById("comfyReloadBtn").addEventListener("click", () => {
-    saveEndpoints();
-    loadComfyFrame();
-  });
-
-  function ensureApi(el) {
-    if (!apiUrl) {
-      renderCardResult(
-        el,
-        "Conexão necessária",
-        "Conecte primeiro a URL do backend do Colab na barra lateral (ou clique em Sincronizar)."
-      );
-      return false;
-    }
-    return true;
-  }
-
-  const chatStream = document.getElementById("chatStream");
-  document.getElementById("chatSendBtn").addEventListener("click", async () => {
-    const tool = document.getElementById("chatTool").value;
-    const urlVal = document.getElementById("chatUrl").value.trim();
-    const txtVal = document.getElementById("chatInput").value;
-    if (!txtVal.trim() && !urlVal) {
-      logConn("Digite algo ou informe uma URL antes de enviar.");
-      return;
     }
 
-    const uRow = document.createElement("div");
-    uRow.className = "msg-row";
-    const uBubble = document.createElement("div");
-    uBubble.className = "msg-user";
-    uBubble.textContent = `[${tool}] ${txtVal || urlVal}`;
-    uRow.appendChild(uBubble);
-    chatStream.appendChild(uRow);
+    async function refreshStatus() {
+      const apiBase = cleanUrl(els.api.value);
+      if (!apiBase) {
+        els.connPill.className = 'pill err';
+        els.connPill.textContent = '● API não configurada';
+        return;
+      }
+      try {
+        const res = await fetch(`${apiBase}/status`);
+        const data = await res.json();
+        els.connPill.className = 'pill ok';
+        els.connPill.textContent = '● API Online';
+        els.gpuPill.textContent = `GPU: ${data.gpu_name || 'CPU'} (${data.free_vram_gb ?? '--'}/${data.total_vram_gb ?? '--'} GB)`;
+        els.comfyPill.textContent = `Comfy (8188): ${data.comfy_8188 ? 'ON' : 'OFF'}`;
+        els.statusJson.textContent = JSON.stringify(data, null, 2);
+        els.statusCards.innerHTML = [
+          ['GPU', data.gpu_name || 'CPU'],
+          ['VRAM Livre / Total', `${data.free_vram_gb ?? '--'} / ${data.total_vram_gb ?? '--'} GB`],
+          ['Modo A100', String(Boolean(data.is_a100))],
+          ['ComfyUI (8188)', data.comfy_8188 ? 'Ativo' : 'Inativo'],
+          ['Túnel', `${data.tunnel_provider || 'none'}`],
+          ['Pipeline Ativo', data.active_pipeline || 'nenhum'],
+        ].map(([k, v]) => `<div class="kv"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+      } catch (e) {
+        els.connPill.className = 'pill err';
+        els.connPill.textContent = '● API Offline';
+        els.statusJson.textContent = `Erro ao consultar /status: ${e.message}`;
+      }
+    }
 
-    const el = document.createElement("div");
-    el.className = "msg-ai";
-    chatStream.appendChild(el);
-    el.scrollIntoView({ behavior: "smooth", block: "end" });
-
-    if (!ensureApi(el)) return;
-    renderCardResult(el, `LUX-Ω (${tool})`, "Processando...");
-
-    try {
-      const params = {};
-      if (tool === "llm_gpu") params.prompt = txtVal;
-      else if (tool === "whisper" || tool === "crawl4ai") params.url = urlVal || txtVal.trim();
-      else if (tool === "tts") params.text = txtVal;
-      else if (tool === "python") params.code = txtVal;
-
-      const res = await fetch(`${apiUrl}/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tool, params })
-      });
+    async function freeVram() {
+      const apiBase = cleanUrl(els.api.value);
+      if (!apiBase) return alert('Configure a URL da API primeiro.');
+      const res = await fetch(`${apiBase}/free_vram`, { method: 'POST' });
       const data = await res.json();
-      if (data.job_id) {
-        await pollJob(
-          data.job_id,
-          msg => renderCardResult(el, `LUX-Ω (${tool})`, msg),
-          finalData => renderCardResult(el, `LUX-Ω (${tool})`, finalData)
-        );
-      } else {
-        renderCardResult(el, `LUX-Ω (${tool})`, data);
-      }
-    } catch (err) {
-      renderCardResult(el, `Erro (${tool})`, `Falha na requisição: ${err.message}`);
+      addMsg(`VRAM atualizada:
+${JSON.stringify(data.gpu || data, null, 2)}`, 'ai');
+      refreshStatus();
     }
-  });
 
-  document.getElementById("dubBtn").addEventListener("click", async () => {
-    const out = document.getElementById("dubOut");
-    if (!ensureApi(out)) return;
-    const vid = document.getElementById("dubVideoFile").files[0];
-    if (!vid) { renderCardResult(out, "Atenção", "Selecione um vídeo base."); return; }
+    async function pollJob(jobId, bubble) {
+      const apiBase = cleanUrl(els.api.value);
+      for (let i = 0; i < 180; i++) {
+        await new Promise(r => setTimeout(r, 1500));
+        const res = await fetch(`${apiBase}/jobs/${jobId}`);
+        const job = await res.json();
+        if (job.status === 'completed' || job.status === 'failed') {
+          return job;
+        }
+        bubble.textContent = `Job ${jobId} (${job.status || 'running'})...`;
+      }
+      return { ok: false, status: 'timeout', error: 'Tempo limite de espera no polling.' };
+    }
 
-    const fd = new FormData();
-    fd.append("video_file", vid);
-    fd.append("target_name", document.getElementById("dubTargetName").value);
-    fd.append("language", document.getElementById("dubLang").value);
-    fd.append("text", document.getElementById("dubText").value);
-    const vFile = document.getElementById("dubVoiceFile").files[0];
-    if (vFile) fd.append("voice_file", vFile);
+    function renderMediaInto(container, apiBase, job) {
+      if (!job || !job.url) return;
+      const fullUrl = job.url.startsWith('http') ? job.url : `${apiBase}${job.url}`;
+      if (job.type === 'video') {
+        container.innerHTML = `<video class="media-preview" controls src="${fullUrl}"></video><div style="font-size:0.8rem;margin-top:4px;"><a href="${fullUrl}" target="_blank" style="color:var(--accent-2);">Abrir vídeo ↗</a></div>`;
+      } else if (job.type === 'audio') {
+        container.innerHTML = `<audio class="media-preview" controls src="${fullUrl}"></audio><div style="font-size:0.8rem;margin-top:4px;"><a href="${fullUrl}" target="_blank" style="color:var(--accent-2);">Baixar áudio ↗</a></div>`;
+      } else if (job.type === 'image') {
+        container.innerHTML = `<img class="media-preview" src="${fullUrl}" alt="Resultado" />`;
+      }
+    }
 
-    renderCardResult(out, "Dublagem", "Enviando vídeo...");
-    try {
-      const res = await fetch(`${apiUrl}/dub_video`, { method: "POST", body: fd });
+    async function submitRun(e) {
+      e.preventDefault();
+      const apiBase = cleanUrl(els.api.value);
+      if (!apiBase) return alert('Configure ou sincronize a URL da API primeiro.');
+
+      const tool = els.runTool.value;
+      const prompt = els.runPrompt.value.trim();
+      const extra = els.runExtra.value.trim();
+      if (!prompt) return;
+
+      addMsg(`[${tool}] ${prompt}`, 'user');
+      els.runPrompt.value = '';
+      els.runSendBtn.disabled = true;
+      const bubble = addMsg('Enviando tarefa para /run...', 'ai');
+
+      const params = { prompt, text: prompt, url: extra || prompt };
+      if (tool === 'llm_gpu' && extra) params.model = extra;
+      if ((tool === 'image_gpu' || tool === 'video_gpu') && extra) params.engine = extra;
+      if (tool === 'python') params.code = extra || prompt;
+
+      try {
+        const res = await fetch(`${apiBase}/run`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool, params }),
+        });
+        const queued = await res.json();
+        const jobId = queued.job_id;
+        els.lastJobLabel.textContent = `Job: ${jobId}`;
+        els.jobLookupId.value = jobId;
+        const finalJob = await pollJob(jobId, bubble);
+        bubble.textContent = finalJob.text || finalJob.stdout || finalJob.error || JSON.stringify(finalJob, null, 2);
+        renderMediaInto(bubble, apiBase, finalJob);
+      } catch (err) {
+        bubble.textContent = `Erro: ${err.message}`;
+      } finally {
+        els.runSendBtn.disabled = false;
+      }
+    }
+
+    async function sendDubVideo() {
+      const apiBase = cleanUrl(els.api.value);
+      if (!apiBase) return alert('Configure a URL da API primeiro.');
+      const vid = document.getElementById('dub-video').files[0];
+      if (!vid) return alert('Selecione um arquivo de vídeo.');
+      const fd = new FormData();
+      fd.append('video_file', vid);
+      fd.append('target_name', document.getElementById('dub-target').value.trim());
+      fd.append('text', document.getElementById('dub-text').value.trim());
+      fd.append('language', document.getElementById('dub-lang').value.trim() || 'pt');
+      const vRef = document.getElementById('dub-voice-ref').files[0];
+      if (vRef) fd.append('voice_file', vRef);
+
+      const targetDiv = document.getElementById('dub-result');
+      targetDiv.textContent = 'Processando /dub_video...';
+      const res = await fetch(`${apiBase}/dub_video`, { method: 'POST', body: fd });
       const data = await res.json();
-      if (data.job_id) {
-        await pollJob(
-          data.job_id,
-          msg => renderCardResult(out, "Dublagem", msg),
-          finalData => renderCardResult(out, "Dublagem concluída", finalData)
-        );
-      } else {
-        renderCardResult(out, "Dublagem", data);
-      }
-    } catch (err) {
-      renderCardResult(out, "Erro Dublagem", err.message);
+      targetDiv.innerHTML = `<pre class="log-box">${JSON.stringify(data, null, 2)}</pre>`;
+      renderMediaInto(targetDiv, apiBase, data);
     }
-  });
 
-  document.getElementById("voiceBtn").addEventListener("click", async () => {
-    const out = document.getElementById("voiceOut");
-    if (!ensureApi(out)) return;
-    const fd = new FormData();
-    fd.append("text", document.getElementById("voiceText").value);
-    fd.append("language", document.getElementById("voiceLang").value);
-    fd.append("engine", document.getElementById("voiceEngine").value);
-    fd.append("clean_bg", document.getElementById("voiceCleanBg").value);
-    fd.append("media_url", document.getElementById("voiceUrl").value);
-    const f = document.getElementById("voiceFile").files[0];
-    if (f) fd.append("file", f);
-
-    renderCardResult(out, "Clonagem de Voz", "Gerando áudio...");
-    try {
-      const res = await fetch(`${apiUrl}/voice_clone`, { method: "POST", body: fd });
-      renderCardResult(out, "Clonagem de Voz", await res.json());
-    } catch (err) {
-      renderCardResult(out, "Erro Clonagem de Voz", err.message);
-    }
-  });
-
-  document.getElementById("swapBtn").addEventListener("click", async () => {
-    const out = document.getElementById("swapOut");
-    if (!ensureApi(out)) return;
-    const media = document.getElementById("swapMediaFile").files[0];
-    if (!media) { renderCardResult(out, "Atenção", "Selecione imagem ou vídeo base."); return; }
-    const fd = new FormData();
-    fd.append("media_file", media);
-    fd.append("target_name", document.getElementById("swapTargetName").value);
-    const face = document.getElementById("swapFaceFile").files[0];
-    if (face) fd.append("face_file", face);
-
-    renderCardResult(out, "Troca de Rosto", "Processando...");
-    try {
-      const res = await fetch(`${apiUrl}/face_swap`, { method: "POST", body: fd });
-      renderCardResult(out, "Troca de Rosto", await res.json());
-    } catch (err) {
-      renderCardResult(out, "Erro Troca de Rosto", err.message);
-    }
-  });
-
-  document.getElementById("vidBtn").addEventListener("click", async () => {
-    const out = document.getElementById("vidOut");
-    if (!ensureApi(out)) return;
-    renderCardResult(out, "Vídeo GPU", "Enfileirando...");
-    try {
-      const res = await fetch(`${apiUrl}/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tool: "video_gpu",
-          params: {
-            engine: document.getElementById("vidEngine").value,
-            prompt: document.getElementById("vidPrompt").value
-          }
-        })
-      });
+    async function sendVoiceClone() {
+      const apiBase = cleanUrl(els.api.value);
+      if (!apiBase) return alert('Configure a URL da API primeiro.');
+      const fd = new FormData();
+      fd.append('text', document.getElementById('vc-text').value.trim());
+      fd.append('language', document.getElementById('vc-lang').value.trim() || 'pt');
+      fd.append('engine', document.getElementById('vc-engine').value.trim() || 'xtts');
+      const targetDiv = document.getElementById('vc-result');
+      targetDiv.textContent = 'Gerando voz...';
+      const res = await fetch(`${apiBase}/voice_clone`, { method: 'POST', body: fd });
       const data = await res.json();
-      if (data.job_id) {
-        await pollJob(
-          data.job_id,
-          msg => renderCardResult(out, "Vídeo GPU", msg),
-          finalData => renderCardResult(out, "Vídeo GPU concluído", finalData)
-        );
-      } else {
-        renderCardResult(out, "Vídeo GPU", data);
-      }
-    } catch (err) {
-      renderCardResult(out, "Erro Vídeo GPU", err.message);
+      targetDiv.innerHTML = `<pre class="log-box">${JSON.stringify(data, null, 2)}</pre>`;
+      renderMediaInto(targetDiv, apiBase, data);
     }
-  });
 
-  document.getElementById("checkStatusBtn").addEventListener("click", async () => {
-    saveEndpoints();
-    const out = document.getElementById("jobsOut");
-    const st = await refreshStatus();
-    if (!st) {
-      renderCardResult(out, "Status Colab", "Backend offline ou URL não configurada.");
-      return;
+    async function sendFaceSwap() {
+      const apiBase = cleanUrl(els.api.value);
+      if (!apiBase) return alert('Configure a URL da API primeiro.');
+      const media = document.getElementById('fs-media').files[0];
+      if (!media) return alert('Selecione imagem ou vídeo.');
+      const fd = new FormData();
+      fd.append('media_file', media);
+      fd.append('target_name', document.getElementById('fs-target').value.trim());
+      const face = document.getElementById('fs-face').files[0];
+      if (face) fd.append('face_file', face);
+      const targetDiv = document.getElementById('fs-result');
+      targetDiv.textContent = 'Enviando /face_swap...';
+      const res = await fetch(`${apiBase}/face_swap`, { method: 'POST', body: fd });
+      const data = await res.json();
+      targetDiv.innerHTML = `<pre class="log-box">${JSON.stringify(data, null, 2)}</pre>`;
+      renderMediaInto(targetDiv, apiBase, data);
     }
-    try {
-      const hRes = await fetch(`${apiUrl}/health`, { mode: "cors" });
-      const hData = await hRes.json();
-      renderCardResult(out, "Status Colab", { status: st, health: hData });
-    } catch (e) {
-      renderCardResult(out, "Status Colab", { status: st, health_error: e.message });
-    }
-  });
 
-  document.getElementById("checkJobBtn").addEventListener("click", async () => {
-    const out = document.getElementById("jobsOut");
-    if (!ensureApi(out)) return;
-    const jid = document.getElementById("jobIdInput").value.trim();
-    if (!jid) { renderCardResult(out, "Atenção", "Informe um job_id."); return; }
-    try {
-      const res = await fetch(`${apiUrl}/jobs/${encodeURIComponent(jid)}`, { mode: "cors" });
-      renderCardResult(out, `Job ${jid}`, await res.json());
-    } catch (e) {
-      renderCardResult(out, `Erro Job ${jid}`, e.message);
+    async function lookupJob() {
+      const apiBase = cleanUrl(els.api.value);
+      const jid = els.jobLookupId.value.trim();
+      if (!apiBase || !jid) return;
+      const res = await fetch(`${apiBase}/jobs/${jid}`);
+      const data = await res.json();
+      els.statusJson.textContent = JSON.stringify(data, null, 2);
     }
-  });
 
-  refreshStatus();
-})();
-</script>
+    loadSaved();
+    syncNtfy(true);
+  </script>
 </body>
 </html>
